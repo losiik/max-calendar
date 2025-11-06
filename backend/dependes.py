@@ -4,6 +4,8 @@ from backend.repository.settings_repository import SettingsRepository
 from backend.services.user_service import UserService
 from backend.services.settings_service import SettingsService
 
+from backend.facade.settings_facade import SettingsFacade
+
 #######################
 #      Repository     #
 #######################
@@ -42,3 +44,18 @@ _settings_service = SettingsService(
 
 def get_settings_service() -> SettingsService:
     return _settings_service
+
+
+#######################
+#       Facade        #
+#######################
+
+
+_settings_facade = SettingsFacade(
+    settings_service=get_settings_service(),
+    user_service=get_user_service()
+)
+
+
+def get_settings_facade() -> SettingsFacade:
+    return _settings_facade

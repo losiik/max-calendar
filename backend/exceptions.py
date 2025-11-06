@@ -1,2 +1,6 @@
 class UserAlreadyExistsError(Exception):
-    """ Email already exists """
+    """ User already exists """
+
+
+class UserDoesNotExistsError(Exception):
+    """ User does not exists """

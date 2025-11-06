@@ -41,5 +41,5 @@ class Settings(Base):
     work_time_start = Column(Float, nullable=False)
     work_time_end = Column(Float, nullable=False)
     alert_offset_minutes = Column(Integer, nullable=False)
-    daily_reminder_time = Column(DateTime, nullable=False)
+    daily_reminder_time = Column(Float, nullable=False)
     working_days = Column(Integer, nullable=False)
