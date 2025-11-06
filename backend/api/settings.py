@@ -1,30 +1,30 @@
 from fastapi import APIRouter, Depends
 from fastapi import HTTPException
 
-from backend.dependes import get_user_service
-from backend.schemas.user_schema import UserCreateRequest, UserCreateResponse
-from backend.services.user_service import UserService
-from backend.exceptions import UserAlreadyExistsError
+from backend.dependes import get_settings_facade
+from backend.schemas.settings_schema import SettingsCreateRequest, SettingsModelPydantic
+from backend.facade.settings_facade import SettingsFacade
+from backend.exceptions import UserDoesNotExistsError
 
 
-user_router = APIRouter(prefix='/users')
-user_router.tags = ["User"]
+settings_router = APIRouter(prefix='/settings')
+settings_router.tags = ["Settings"]
 
 
-@user_router.put('/', response_model=UserCreateResponse)
-async def create_user(
-        user_data: UserCreateRequest,
-        user_service: UserService = Depends(get_user_service)
+@settings_router.put('/', response_model=SettingsModelPydantic)
+async def add_settings(
+        max_id: int,
+        settings_data: SettingsCreateRequest,
+        settings_facade: SettingsFacade = Depends(get_settings_facade)
 ):
     try:
-        user = await user_service.create(
-            max_id=user_data.max_id,
-            name=user_data.name,
-            username=user_data.username
+        settings = await settings_facade.create_user_settings(
+            max_id=max_id,
+            settings=settings_data
         )
 
-        return UserCreateResponse(id=user.id)
-    except UserAlreadyExistsError:
-        raise HTTPException(status_code=409, detail={"detail": "User already exists"})
+        return settings
+    except UserDoesNotExistsError:
+        raise HTTPException(status_code=409, detail={"detail": "User does not exists"})
     except:
         raise HTTPException(status_code=500, detail={"detail": "Internal server error"})

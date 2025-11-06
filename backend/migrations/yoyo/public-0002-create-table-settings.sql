@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS public.settings (
     work_time_start DOUBLE PRECISION NOT NULL,
     work_time_end DOUBLE PRECISION NOT NULL,
     alert_offset_minutes INTEGER NOT NULL,
-    daily_reminder_time TIMESTAMP NOT NULL,
+    daily_reminder_time FLOAT NOT NULL,
     working_days INTEGER NOT NULL DEFAULT 31,
     CONSTRAINT settings_pkey PRIMARY KEY (id),
     CONSTRAINT settings_user_id_fkey FOREIGN KEY (user_id)
