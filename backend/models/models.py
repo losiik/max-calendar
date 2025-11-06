@@ -40,6 +40,20 @@ class Settings(Base):
     timezone = Column(Integer, nullable=False, default=0)
     work_time_start = Column(Float, nullable=False)
     work_time_end = Column(Float, nullable=False)
-    alert_offset_minutes = Column(Integer, nullable=False)
-    daily_reminder_time = Column(Float, nullable=False)
+    alert_offset_minutes = Column(Integer, nullable=True)
+    daily_reminder_time = Column(Float, nullable=True)
     working_days = Column(Integer, nullable=False)
+
+
+class TimeSlots(Base):
+    __tablename__ = "time_slots"
+
+    id = Column(UUID, primary_key=True)
+    owner_id = Column(UUID, ForeignKey('user.id', ondelete='CASCADE'))
+    invited_id = Column(UUID, ForeignKey('user.id', ondelete='CASCADE'))
+    meet_start_at = Column(DateTime, nullable=True, default=datetime.now())
+    meet_end_at = Column(DateTime, nullable=True, default=datetime.now())
+    confirm = Column(Boolean, nullable=False, default=False)
+    title = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    meeting_url = Column(String, nullable=True)

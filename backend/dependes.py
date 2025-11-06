@@ -1,8 +1,10 @@
 from backend.repository.user_repository import UserRepository
 from backend.repository.settings_repository import SettingsRepository
+from backend.repository.time_slots_repository import TimeSlotsRepository
 
 from backend.services.user_service import UserService
 from backend.services.settings_service import SettingsService
+from backend.services.time_slots_service import TimeSlotsService
 
 from backend.facade.settings_facade import SettingsFacade
 
@@ -22,6 +24,13 @@ _settings_repository = SettingsRepository()
 
 def get_settings_repository() -> SettingsRepository:
     return _settings_repository
+
+
+_time_slots_repository = TimeSlotsRepository()
+
+
+def get_time_slots_repository() -> TimeSlotsRepository:
+    return _time_slots_repository
 
 
 #######################
@@ -45,6 +54,14 @@ _settings_service = SettingsService(
 def get_settings_service() -> SettingsService:
     return _settings_service
 
+
+_time_slots_service = TimeSlotsService(
+    time_slots_repository=get_time_slots_repository()
+)
+
+
+def get_time_slots_service() -> TimeSlotsService:
+    return _time_slots_service
 
 #######################
 #       Facade        #
