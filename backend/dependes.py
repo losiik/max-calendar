@@ -1,12 +1,15 @@
 from backend.repository.user_repository import UserRepository
 from backend.repository.settings_repository import SettingsRepository
 from backend.repository.time_slots_repository import TimeSlotsRepository
+from backend.repository.share_repository import ShareRepository
 
 from backend.services.user_service import UserService
 from backend.services.settings_service import SettingsService
 from backend.services.time_slots_service import TimeSlotsService
+from backend.services.share_service import ShareService
 
 from backend.facade.settings_facade import SettingsFacade
+from backend.facade.share_facade import ShareFacade
 
 #######################
 #      Repository     #
@@ -31,6 +34,13 @@ _time_slots_repository = TimeSlotsRepository()
 
 def get_time_slots_repository() -> TimeSlotsRepository:
     return _time_slots_repository
+
+
+_share_repository = ShareRepository()
+
+
+def get_share_repository() -> ShareRepository:
+    return _share_repository
 
 
 #######################
@@ -63,6 +73,16 @@ _time_slots_service = TimeSlotsService(
 def get_time_slots_service() -> TimeSlotsService:
     return _time_slots_service
 
+
+_share_service = ShareService(
+    share_repository=get_share_repository()
+)
+
+
+def get_share_service() -> ShareService:
+    return _share_service
+
+
 #######################
 #       Facade        #
 #######################
@@ -76,3 +96,13 @@ _settings_facade = SettingsFacade(
 
 def get_settings_facade() -> SettingsFacade:
     return _settings_facade
+
+
+_share_facade = ShareFacade(
+    share_service=get_share_service(),
+    user_service=get_user_service()
+)
+
+
+def get_share_facade() -> ShareFacade:
+    return _share_facade

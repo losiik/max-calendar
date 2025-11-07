@@ -57,3 +57,12 @@ class TimeSlots(Base):
     title = Column(String, nullable=False)
     description = Column(String, nullable=True)
     meeting_url = Column(String, nullable=True)
+
+
+class Share(Base):
+    __tablename__ = "share"
+
+    id = Column(UUID, primary_key=True)
+    owner_id = Column(UUID, ForeignKey('user.id', ondelete='CASCADE'))
+    share_token = Column(String, nullable=False, unique=True)
+    created_at = Column(DateTime, nullable=False)
