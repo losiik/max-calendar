@@ -33,7 +33,7 @@ async def create_user(
         raise HTTPException(status_code=500, detail={"detail": "Internal server error"})
 
 
-@user_router.put('/', response_model=UserResponse)
+@user_router.get('/', response_model=UserResponse)
 async def get_user(
         max_id: int,
         user_service: UserService = Depends(get_user_service)
