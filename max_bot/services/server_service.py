@@ -18,3 +18,10 @@ class ServerService:
             url = f"{self.base_url_api}api/v1/users/"
             async with session.put(url, json=data) as r:
                 return await r.json(), r.status
+
+    async def share_token(self, max_id: int) -> tuple[dict, int]:
+        async with aiohttp.ClientSession(timeout=self.timeout) as session:
+            url = f"{self.base_url_api}api/v1/share/{max_id}"
+            async with session.get(url) as r:
+                return await r.json(), r.status
+

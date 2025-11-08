@@ -4,6 +4,7 @@ from maxapi.types import ButtonsPayload, LinkButton, CallbackButton, MessageCall
 
 from max_bot.services.user_service import UserService
 from max_bot.dependes import get_user_service
+from max_bot.keyboard.calendar_kb import get_open_calendar_button
 
 start_router = Router()
 
@@ -20,8 +21,8 @@ async def bot_started(
     )
 
     buttons = [
-        [LinkButton(text="Настройки", url="https://explainagent.ru")],
-        [CallbackButton(text="Список команд", payload="command_list")]
+        [get_open_calendar_button()],
+        [CallbackButton(text="Поделиться календарем", payload="share_link")]
     ]
 
     payload = ButtonsPayload(buttons=buttons).pack()
@@ -37,11 +38,10 @@ async def bot_started(
 @start_router.message_created(Command('start'))
 async def hello(event: MessageCreated):
     buttons = [
-        [LinkButton(text="Настройки", url="https://explainagent.ru")],
-        [CallbackButton(text="Список команд", payload="command_list")]
+        [get_open_calendar_button()],
+        [CallbackButton(text="Поделиться календарем", payload="share_link")]
     ]
-
-    payload = ButtonsPayload(buttons=buttons).pack()
+    print(event.__dict__)
 
     payload = ButtonsPayload(buttons=buttons).pack()
     # print(event)
