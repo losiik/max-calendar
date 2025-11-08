@@ -6,6 +6,8 @@ from backend.schemas.user_schema import UserCreateRequest, UserCreateResponse
 from backend.services.user_service import UserService
 from backend.exceptions import UserAlreadyExistsError
 
+import logging
+
 
 user_router = APIRouter(prefix='/users')
 user_router.tags = ["User"]
@@ -26,5 +28,6 @@ async def create_user(
         return UserCreateResponse(id=user.id)
     except UserAlreadyExistsError:
         raise HTTPException(status_code=409, detail={"detail": "User already exists"})
-    except:
+    except Exception as e:
+        logging.error(str(e))
         raise HTTPException(status_code=500, detail={"detail": "Internal server error"})

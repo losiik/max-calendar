@@ -1,0 +1,39 @@
+version: "3"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: max-calendar-backend
+    command: sh -c "sleep 10 && uvicorn backend.main:app --host 0.0.0.0 --port 9090"
+    ports:
+      - "9090:9090"
+    environment:
+      - PYTHONPATH=/app
+    env_file:
+      - ./backend/.env
+    restart: always
+
+  db:
+    image: postgres:16
+    container_name: max-calendar-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    # Добавляем healthcheck
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d mydb" ]
+      interval: 3s
+      timeout: 2s
+      retries: 5
+
+volumes:
+  postgres_data:

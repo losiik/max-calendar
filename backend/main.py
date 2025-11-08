@@ -1,5 +1,4 @@
 import os
-import secrets
 
 import uvicorn
 
@@ -14,12 +13,16 @@ from backend.database import AsyncDBSessionMiddleware
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from settings.settings import settings
+from backend.settings.settings import settings
 from backend.api.routers import api_router
+
+from pathlib import Path
+
+MIGRATIONS_PATH = Path(__file__).parent / "migrations" / "yoyo"
 
 # При использовании yoyo-миграций
 backend = get_backend(settings.sql_alchemy_connection_url.replace("+asyncpg", ""))
-migrations = read_migrations('./migrations/yoyo')
+migrations = read_migrations(str(MIGRATIONS_PATH))
 
 with backend.lock():
     backend.apply_migrations(backend.to_apply(migrations))

@@ -8,7 +8,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.requests import Request
 from starlette.types import ASGIApp
 
-from settings.settings import settings
+from backend.settings.settings import settings
 
 
 DATABASE_URL = settings.sql_alchemy_connection_url
