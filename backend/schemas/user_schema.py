@@ -23,3 +23,10 @@ class UserModelPydantic(BaseModel):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserResponse(BaseModel):
+    id: UUID
+    max_id: int
+    name: Optional[str] = None
+    username: Optional[str] = None
