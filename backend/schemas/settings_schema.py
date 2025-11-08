@@ -17,14 +17,30 @@ class SettingsCreateRequest(BaseModel):
 class SettingsModelPydantic(BaseModel):
     id: UUID
     user_id: UUID
-    created_at: datetime
-    updated_at: datetime
-    timezone: int
-    work_time_start: float
-    work_time_end: float
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
+    timezone: Optional[int]
+    work_time_start: Optional[float]
+    work_time_end: Optional[float]
     alert_offset_minutes: Optional[int] = None
     daily_reminder_time: Optional[float] = None
-    working_days: int
+    working_days: Optional[int]
 
     model_config = ConfigDict(from_attributes=True)
 
+
+class BaseSettings(BaseModel):
+    timezone: Optional[int] = None
+    work_time_start: Optional[float] = None
+    work_time_end: Optional[float] = None
+    alert_offset_minutes: Optional[int] = None
+    daily_reminder_time: Optional[float] = None
+    working_days: list[str] = None  # [пн, вт, ср, чт, пт, сб, вс]
+
+
+class SettingsResponse(BaseSettings):
+    pass
+
+
+class SettingsUpdateRequest(BaseSettings):
+    pass

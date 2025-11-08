@@ -1,14 +1,21 @@
+import asyncio
 from datetime import datetime
 from uuid import UUID
+from typing import Optional, Any
 
 from backend.models.models import Settings
 from backend.repository.settings_repository import SettingsRepository
-from backend.schemas.settings_schema import SettingsModelPydantic
+from backend.schemas.settings_schema import SettingsModelPydantic, SettingsResponse
+from backend.signals import user_register_signal
 
 
 class SettingsService:
     def __init__(self, settings_repository: SettingsRepository):
         self._settings_repository = settings_repository
+        user_register_signal.connect(self._handle_user_created_wrapper)
+
+    async def _handle_user_created_wrapper(self, user_id: UUID):
+        asyncio.create_task(self.create_settings(user_id))
 
     @staticmethod
     def days_to_bitmask(days_list) -> int:
@@ -30,17 +37,54 @@ class SettingsService:
 
         return bitmask
 
+    @staticmethod
+    def bitmask_to_days(bitmask: int) -> list[str]:
+        day_map = {
+            0: 'пн',
+            1: 'вт',
+            2: 'ср',
+            3: 'чт',
+            4: 'пт',
+            5: 'сб',
+            6: 'вс',
+        }
+
+        days_list = []
+        for bit_position, day_name in day_map.items():
+            if bitmask & (1 << bit_position):
+                days_list.append(day_name)
+
+        return days_list
+
+    def settings_model_to_response(
+            self,
+            model: SettingsModelPydantic
+    ) -> SettingsResponse:
+        return SettingsResponse(
+            timezone=model.timezone,
+            work_time_start=model.work_time_start,
+            work_time_end=model.work_time_end,
+            alert_offset_minutes=model.alert_offset_minutes,
+            daily_reminder_time=model.daily_reminder_time,
+            working_days=self.bitmask_to_days(model.working_days)
+        )
+
     async def create_settings(
             self,
             user_id: UUID,
-            timezone: int,
-            work_time_start: float,
-            work_time_end: float,
-            alert_offset_minutes: int,
-            daily_reminder_time: float,
-            working_days: list[str]
+            timezone: Optional[int] = None,
+            work_time_start: Optional[float] = None,
+            work_time_end: Optional[float] = None,
+            alert_offset_minutes: Optional[int] = None,
+            daily_reminder_time: Optional[float] = None,
+            working_days: Optional[list[str]] = None
     ) -> SettingsModelPydantic:
-        working_days_bit_mask = self.days_to_bitmask(days_list=working_days)
+        if working_days is not None:
+            working_days_bit_mask = self.days_to_bitmask(
+                days_list=working_days
+            )
+        else:
+            working_days_bit_mask = None
 
         settings = Settings(
             user_id=user_id,
@@ -58,5 +102,14 @@ class SettingsService:
         )
         return SettingsModelPydantic.from_orm(settings_data)
 
-    async def update_settings(self):
-        pass
+    async def update_settings(self, user_id: UUID, update_data: dict[str, Any]) -> SettingsModelPydantic:
+        settings = await self.get_settings(user_id=user_id)
+        updated_settings = await self._settings_repository.update(
+            entity_id=settings.id,
+            data=update_data
+        )
+        return SettingsModelPydantic.from_orm(updated_settings)
+
+    async def get_settings(self, user_id: UUID) -> SettingsModelPydantic:
+        settings = await self._settings_repository.find_by_user_id(user_id=user_id)
+        return SettingsModelPydantic.from_orm(settings)

@@ -4,6 +4,7 @@ from backend.repository.user_repository import UserRepository
 from backend.models.models import User
 from backend.schemas.user_schema import UserModelPydantic
 from backend.exceptions import UserAlreadyExistsError
+from backend.signals import user_register_signal
 
 
 class UserService:
@@ -31,4 +32,5 @@ class UserService:
             )
         )
 
+        await user_register_signal.send_async(user.id)
         return UserModelPydantic.from_orm(user)
