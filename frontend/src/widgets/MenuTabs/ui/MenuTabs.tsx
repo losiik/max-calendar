@@ -38,7 +38,7 @@ export const MenuTabs = memo(function MenuTabs() {
   };
 
   return (
-    <Container className="fixed bottom-4 left-0 right-0 z-10">
+    <Container className="fixed bottom-8 left-0 right-0 z-10">
       <Flex
         direction="row"
         role="tablist"
