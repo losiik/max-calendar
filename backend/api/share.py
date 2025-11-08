@@ -20,6 +20,6 @@ async def get_share_token(
         token = await share_facade.get_share_token(max_id=max_id)
         return ShareTokenResponse(token=token)
     except UserDoesNotExistsError:
-        raise HTTPException(status_code=409, detail={"detail": "User does not exists"})
+        raise HTTPException(status_code=409, detail="User does not exists")
     except:
-        raise HTTPException(status_code=500, detail={"detail": "Internal server error"})
+        raise HTTPException(status_code=500, detail="Internal server error")

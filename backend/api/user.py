@@ -27,10 +27,10 @@ async def create_user(
 
         return UserCreateResponse(id=user.id)
     except UserAlreadyExistsError:
-        raise HTTPException(status_code=409, detail={"detail": "User already exists"})
+        raise HTTPException(status_code=409, detail="User already exists")
     except Exception as e:
         logging.error(str(e))
-        raise HTTPException(status_code=500, detail={"detail": "Internal server error"})
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @user_router.get('/', response_model=UserResponse)
@@ -46,4 +46,4 @@ async def get_user(
             name=user.name,
             username=user.username
         )
-    raise HTTPException(status_code=409, detail={"detail": "User does not exists"})
+    raise HTTPException(status_code=409, detail="User does not exists")

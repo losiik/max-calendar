@@ -29,9 +29,9 @@ async def add_settings(
 
         return settings
     except UserDoesNotExistsError:
-        raise HTTPException(status_code=409, detail={"detail": "User does not exists"})
+        raise HTTPException(status_code=409, detail="User does not exists")
     except:
-        raise HTTPException(status_code=500, detail={"detail": "Internal server error"})
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @settings_router.patch('/', response_model=SettingsResponse)
@@ -52,9 +52,9 @@ async def update_settings(
         )
         return settings
     except UserDoesNotExistsError:
-        raise HTTPException(status_code=409, detail={"detail": "User does not exists"})
+        raise HTTPException(status_code=409, detail="User does not exists")
     except:
-        raise HTTPException(status_code=500, detail={"detail": "Internal server error"})
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @settings_router.get('/', response_model=SettingsResponse)
@@ -69,6 +69,6 @@ async def get_settings(
 
         return settings
     except UserDoesNotExistsError:
-        raise HTTPException(status_code=409, detail={"detail": "User does not exists"})
+        raise HTTPException(status_code=409, detail="User does not exists")
     except:
-        raise HTTPException(status_code=500, detail={"detail": "Internal server error"})
+        raise HTTPException(status_code=500, detail="Internal server error")
