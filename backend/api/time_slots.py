@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from fastapi import HTTPException
 
-from backend.dependes import get_user_service
-from backend.schemas.user_schema import UserCreateRequest, UserCreateResponse
-from backend.services.user_service import UserService
+from backend.dependes import get_time_slots_service
+from backend.schemas.time_slots_schema import TimeSlotsCreateRequest
+from backend.services.time_slots_service import TimeSlotsService
 from backend.exceptions import UserAlreadyExistsError
 
 
@@ -13,8 +13,8 @@ time_slots_router.tags = ["Time Slots"]
 
 @time_slots_router.put('/', response_model=UserCreateResponse)
 async def book_time_slot(
-        user_data: UserCreateRequest,
-        user_service: UserService = Depends(get_user_service)
+        book_data: TimeSlotsCreateRequest,
+        user_service: TimeSlotsService = Depends(get_time_slots_service)
 ):
     pass
 
