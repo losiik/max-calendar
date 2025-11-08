@@ -12,7 +12,8 @@ import logging
 user_router = APIRouter(prefix='/users')
 user_router.tags = ["User"]
 
-
+# при регистрации сразу создавать пустые настройки
+# добавить эндпоинт на проверку новый юзер или нет
 @user_router.put('/', response_model=UserCreateResponse)
 async def create_user(
         user_data: UserCreateRequest,
