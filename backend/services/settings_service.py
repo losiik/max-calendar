@@ -7,6 +7,7 @@ from backend.models.models import Settings
 from backend.repository.settings_repository import SettingsRepository
 from backend.schemas.settings_schema import SettingsModelPydantic, SettingsResponse
 from backend.signals import user_register_signal
+from backend.decorators import background_session
 
 
 class SettingsService:
@@ -15,7 +16,11 @@ class SettingsService:
         user_register_signal.connect(self._handle_user_created_wrapper)
 
     async def _handle_user_created_wrapper(self, user_id: UUID):
-        asyncio.create_task(self.create_settings(user_id))
+        asyncio.create_task(self.handle_user_created(user_id))
+
+    @background_session
+    async def handle_user_created(self, user_id: UUID):
+        await self.create_settings(user_id)
 
     @staticmethod
     def days_to_bitmask(days_list) -> int:

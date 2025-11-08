@@ -1,5 +1,4 @@
 import os
-
 import uvicorn
 
 from dotenv import load_dotenv
@@ -32,16 +31,15 @@ app = FastAPI(openapi_prefix="/")
 
 # Middlewares
 app.add_middleware(
+    AsyncDBSessionMiddleware,
+)
+app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(
-    AsyncDBSessionMiddleware,
-)
-
 
 # Routers
 app.include_router(api_router)
