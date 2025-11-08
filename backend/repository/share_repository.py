@@ -18,3 +18,12 @@ class ShareRepository(CrudRepository[Share, UUID]):
         if share_data:
             return ShareModelPydantic.from_orm(share_data)
         return None
+
+    async def find_by_token(self, token: str) -> Optional[ShareModelPydantic]:
+        stmt = select(Share).where(Share.share_token == token)
+        result = await db.session.execute(stmt)
+        share_data = result.scalar_one_or_none()
+
+        if share_data:
+            return ShareModelPydantic.from_orm(share_data)
+        return None

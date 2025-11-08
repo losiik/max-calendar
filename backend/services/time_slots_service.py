@@ -1,12 +1,40 @@
+from uuid import UUID
+from datetime import datetime
+from typing import Optional
+
 from backend.repository.time_slots_repository import TimeSlotsRepository
+from backend.schemas.time_slots_schema import TimeSlotsModelPydantic
+from backend.models.models import TimeSlots
 
 
 class TimeSlotsService:
     def __init__(self, time_slots_repository: TimeSlotsRepository):
         self._time_slots_repository = time_slots_repository
 
-    async def create_time_slot(self):
-        pass
+    async def create_time_slot(
+            self,
+            owner_id: UUID,
+            invited_id: UUID,
+            meet_start_at: datetime,
+            meet_end_at: datetime,
+            confirm: bool,
+            title: Optional[str] = None,
+            description: Optional[str] = None,
+            meeting_url: Optional[str] = None
+    ) -> TimeSlotsModelPydantic:
+        time_slot = await self._time_slots_repository.save(
+            entity=TimeSlots(
+                owner_id=owner_id,
+                invited_id=invited_id,
+                meet_start_at=meet_start_at,
+                meet_end_at=meet_end_at,
+                confirm=confirm,
+                title=title,
+                description=description,
+                meeting_url=meeting_url
+            )
+        )
+        return TimeSlotsModelPydantic.from_orm(time_slot)
 
     async def update_time_slot(self):
         pass

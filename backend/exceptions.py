@@ -4,3 +4,7 @@ class UserAlreadyExistsError(Exception):
 
 class UserDoesNotExistsError(Exception):
     """ User does not exists """
+
+
+class ShareTokenDoesNotExistsError(Exception):
+    """ Token does not exists """
