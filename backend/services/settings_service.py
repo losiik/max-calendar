@@ -65,13 +65,18 @@ class SettingsService:
             self,
             model: SettingsModelPydantic
     ) -> SettingsResponse:
+        if model.working_days:
+            working_days = self.bitmask_to_days(model.working_days)
+        else:
+            working_days = None
+
         return SettingsResponse(
             timezone=model.timezone,
             work_time_start=model.work_time_start,
             work_time_end=model.work_time_end,
             alert_offset_minutes=model.alert_offset_minutes,
             daily_reminder_time=model.daily_reminder_time,
-            working_days=self.bitmask_to_days(model.working_days)
+            working_days=working_days
         )
 
     async def create_settings(
