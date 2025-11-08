@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS public.share (
     CONSTRAINT share_pkey PRIMARY KEY (id),
     CONSTRAINT share_share_token_key UNIQUE (share_token),
     CONSTRAINT share_owner_id_fkey FOREIGN KEY (owner_id)
-        REFERENCES public."user"(max_id) ON DELETE CASCADE
+        REFERENCES public."user"(id) ON DELETE CASCADE
 );
 
 -- Индексы для оптимизации
