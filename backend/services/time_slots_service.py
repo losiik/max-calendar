@@ -4,6 +4,7 @@ from typing import Optional
 
 from backend.repository.time_slots_repository import TimeSlotsRepository
 from backend.schemas.time_slots_schema import TimeSlotsModelPydantic
+from backend.models.models import TimeSlots
 
 
 class TimeSlotsService:
@@ -21,7 +22,19 @@ class TimeSlotsService:
             description: Optional[str] = None,
             meeting_url: Optional[str] = None
     ) -> TimeSlotsModelPydantic:
-        pass
+        time_slot = await self._time_slots_repository.save(
+            entity=TimeSlots(
+                owner_id=owner_id,
+                invited_id=invited_id,
+                meet_start_at=meet_start_at,
+                meet_end_at=meet_end_at,
+                confirm=confirm,
+                title=title,
+                description=description,
+                meeting_url=meeting_url
+            )
+        )
+        return TimeSlotsModelPydantic.from_orm(time_slot)
 
     async def update_time_slot(self):
         pass

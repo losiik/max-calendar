@@ -1,6 +1,7 @@
 import secrets
 import string
 from uuid import UUID
+from typing import Optional
 
 from backend.models.models import Share
 from backend.repository.share_repository import ShareRepository
@@ -39,3 +40,7 @@ class ShareService:
             )
         )
         return ShareModelPydantic.from_orm(share)
+
+    async def get_share_data_by_token(self, token: str) -> Optional[ShareModelPydantic]:
+        share_data = await self._share_repository.find_by_token(token=token)
+        return share_data

@@ -19,5 +19,8 @@ class Settings(BaseSettings):
 
     sql_echo: bool = False  # True для отладки SQL-запросов
 
+    # max bot
+    max_api_key: str = os.getenv("MAX_API_KEY")
+
 
 settings = Settings()

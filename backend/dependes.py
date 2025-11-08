@@ -1,3 +1,5 @@
+from backend.settings.settings import settings
+
 from backend.repository.user_repository import UserRepository
 from backend.repository.settings_repository import SettingsRepository
 from backend.repository.time_slots_repository import TimeSlotsRepository
@@ -7,6 +9,7 @@ from backend.services.user_service import UserService
 from backend.services.settings_service import SettingsService
 from backend.services.time_slots_service import TimeSlotsService
 from backend.services.share_service import ShareService
+from backend.services.notification_service import NotificationService
 
 from backend.facade.settings_facade import SettingsFacade
 from backend.facade.share_facade import ShareFacade
@@ -82,6 +85,15 @@ _share_service = ShareService(
 
 def get_share_service() -> ShareService:
     return _share_service
+
+
+_notification_service = NotificationService(
+    settings=settings
+)
+
+
+def get_notification_service() -> NotificationService:
+    return _notification_service
 
 
 #######################
