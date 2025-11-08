@@ -122,4 +122,4 @@ class SettingsService:
 
     async def get_settings(self, user_id: UUID) -> SettingsModelPydantic:
         settings = await self._settings_repository.find_by_user_id(user_id=user_id)
-        return SettingsModelPydantic.from_orm(settings)
+        return settings
