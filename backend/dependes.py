@@ -10,6 +10,7 @@ from backend.services.share_service import ShareService
 
 from backend.facade.settings_facade import SettingsFacade
 from backend.facade.share_facade import ShareFacade
+from backend.facade.time_slots_facade import TimeSlotsFacade
 
 #######################
 #      Repository     #
@@ -106,3 +107,14 @@ _share_facade = ShareFacade(
 
 def get_share_facade() -> ShareFacade:
     return _share_facade
+
+
+_time_slots_facade = TimeSlotsFacade(
+    time_slots_service=get_time_slots_service(),
+    user_service=get_user_service(),
+    share_service=get_share_service()
+)
+
+
+def get_time_slots_facade() -> TimeSlotsFacade:
+    return _time_slots_facade

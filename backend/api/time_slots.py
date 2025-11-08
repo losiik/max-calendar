@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi import HTTPException
 
-from backend.dependes import get_user_service
+from backend.dependes import get_time_slots_facade
 from backend.schemas.time_slots_schema import TimeSlotsCreateRequest
 from backend.facade.time_slots_facade import TimeSlotsFacade
 from backend.exceptions import UserAlreadyExistsError
@@ -14,7 +14,7 @@ time_slots_router.tags = ["Time Slots"]
 @time_slots_router.put('/', response_model=UserCreateResponse)
 async def book_time_slot(
         booking_data: TimeSlotsCreateRequest,
-        time_slots_facade: TimeSlotsFacade = Depends(get_user_service)
+        time_slots_facade: TimeSlotsFacade = Depends(get_time_slots_facade)
 ):
     pass
 
