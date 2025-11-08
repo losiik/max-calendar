@@ -57,6 +57,7 @@ class TimeSlots(Base):
     title = Column(String, nullable=False)
     description = Column(String, nullable=True)
     meeting_url = Column(String, nullable=True)
+    created_at = Column(DateTime, nullable=True, default=datetime.now())
 
 
 class Share(Base):

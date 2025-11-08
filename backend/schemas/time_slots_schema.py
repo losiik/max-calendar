@@ -13,8 +13,8 @@ class TimeSlots(BaseModel):
 
 
 class TimeSlotsCreateRequest(TimeSlots):
-    owner_id: UUID
-    invited_id: UUID
+    owner_token: str
+    invited_max_id: int
 
 
 class TimeSlotsModelPydantic(BaseModel):

@@ -1,0 +1,2 @@
+ALTER TABLE public.time_slots
+ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NULL DEFAULT now();
