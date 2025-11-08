@@ -1,9 +1,8 @@
 import { CellList, Typography, Switch, CellSimple, Button, Panel } from '@maxhub/max-ui'
 import { useWorkingDaysStore } from '../model/working-days.store';
 import { useModalStore } from '@/shared/modal';
-
-
-
+import { useSettingsMutation } from '@/features/calendar-settings/lib/useSettingsMutation';
+import { mapRecordToServerDays } from '@/features/calendar-settings/lib/working-days.mapper';
 
 const LABELS: { key: 'mon'|'tue'|'wed'|'thu'|'fri'|'sat'|'sun'; label: string }[] = [
   { key: 'mon', label: 'Понедельник' },
@@ -18,10 +17,13 @@ const LABELS: { key: 'mon'|'tue'|'wed'|'thu'|'fri'|'sat'|'sun'; label: string }[
 export function WorkingDaysContent() {
   const days = useWorkingDaysStore((s) => s.days)
   const toggle = useWorkingDaysStore((s) => s.toggle)
+  const { mutateAsync, isPending } = useSettingsMutation()
 
   const close = useModalStore((s) => s.close);
   
-  const handleSave = () => {
+  const handleSave = async () => {
+    const workingDays = mapRecordToServerDays(days)
+    await mutateAsync({ working_days: workingDays }).catch(() => {alert("Ошибка сохранения рабочих дней")});
     close()
   }
 
@@ -36,7 +38,7 @@ export function WorkingDaysContent() {
           after={<Switch checked={days[d.key]} onChange={() => toggle(d.key)} />}
         />
       ))}
-      <Button mode='primary' className="mt-4 w-full" onClick={handleSave}>
+      <Button mode='primary' className="mt-4 w-full" onClick={handleSave} disabled={isPending}>
         Сохранить
       </Button>
     </CellList>

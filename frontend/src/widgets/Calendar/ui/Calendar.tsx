@@ -1,4 +1,4 @@
-import { Panel, Typography } from "@maxhub/max-ui";
+import { Panel, Spinner, Typography } from "@maxhub/max-ui";
 
 import type {
   CalendarDay,
@@ -64,7 +64,8 @@ export function Calendar({
               colorScheme === "dark" ? "text-neutral-400" : "text-neutral-500"
             }
           >
-            Загружаем события...
+            
+        <Spinner size={16} title="Загрузка..."  />
           </Typography.Body>
         </div>
       ) : (

@@ -219,6 +219,8 @@ export const getWebAppUser = (): WebAppUser | undefined =>
 
 export const getMaxUserId = (): string | undefined => {
   const id = getWebAppUser()?.id;
+
+  if (!id && import.meta.env.DEV === true) return import.meta.env.VITE_MAX_USER_ID;
   return typeof id === "number" ? String(id) : id;
 };
 

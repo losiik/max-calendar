@@ -17,7 +17,7 @@ type ExternalCalendarViewProps = {
 
 export function ExternalCalendarView({
   calendarId,
-  title = "Календарь пользователя",
+  title = "Внешний календарь",
   subtitle,
   hideHeader = false,
   onExit,

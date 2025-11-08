@@ -3,6 +3,7 @@ import type {
   CalendarEvent,
   ISODateString,
 } from "../model/types";
+import type { SettingsResponse } from "@/entities/settings/types";
 import { toLocalISODate } from "@/shared/util/date";
 
 const uid = () =>
@@ -86,6 +87,22 @@ const baseSharedDays: CalendarDay[] = [
 export const mockSharedCalendars: Record<string, CalendarDay[]> = {
   demo: baseSharedDays,
   "dfkdfmvkfmvkm": baseSharedDays,
+};
+
+export let mockSettings: SettingsResponse = {
+  timezone: 0,
+  work_time_start: 9,
+  work_time_end: 18,
+  alert_offset_minutes: 30,
+  daily_reminder_time: 9,
+  working_days: ["пн", "вт", "ср", "чт", "пт"],
+};
+
+export const updateMockSettings = (
+  changes: Partial<SettingsResponse>
+): SettingsResponse => {
+  mockSettings = { ...mockSettings, ...changes };
+  return mockSettings;
 };
 
 type GuestMeta = {

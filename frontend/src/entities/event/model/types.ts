@@ -25,7 +25,7 @@ export interface BaseEventFields {
  */
 export interface CalendarEvent extends BaseEventFields {
   id?: EntityId; // от бэка
-  maxId?: string; // только при отправке: WebAppData.user.user_id
+  maxId?: string; // только при отправке: WebAppData.user.id
 }
 
 /**

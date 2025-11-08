@@ -34,7 +34,7 @@ export function GuestCalendarOverlay() {
       : "bg-white text-neutral-900";
 
   return createPortal(
-    <div className="fixed inset-0 z-40 flex items-start justify-center bg-neutral-950/70 p-4 backdrop-blur">
+    <div className="fixed inset-0 z-40 flex items-start justify-center bg-neutral-950/70 p-0 backdrop-blur">
       <Panel
         className={`w-full max-w-4xl overflow-hidden rounded-2xl shadow-xl ${panelClass}`}
       >
@@ -43,20 +43,17 @@ export function GuestCalendarOverlay() {
             <Typography.Title variant="medium-strong">
               {title ?? `Календарь ${ownerName ?? ""}`}
             </Typography.Title>
-            <Typography.Label className="text-neutral-500">
-              Вы просматриваете чужой календарь
-            </Typography.Label>
           </div>
           <Button
             mode="secondary"
             appearance="neutral-themed"
             onClick={handleExit}
           >
-            Вернуться к своему календарю
+            Закрыть
           </Button>
         </div>
 
-        <div className="max-h-[90vh] overflow-y-auto px-4 py-4">
+        <div className="max-h-[90vh] overflow-y-auto py-4">
           <ExternalCalendarView
             calendarId={calendarId}
             title={`Календарь ${ownerName ?? "пользователя"}`}

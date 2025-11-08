@@ -35,9 +35,6 @@ export default function CalendarPage() {
         <Typography.Title variant="large-strong">
           {username ? `Привет, ${username}` : "Привет!"}
         </Typography.Title> 
-        {/* <Typography.Label className="text-neutral-500">
-          Мой календарь
-        </Typography.Label> */}
       </div>
 
       <Calendar

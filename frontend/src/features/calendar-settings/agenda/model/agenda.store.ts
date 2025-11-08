@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+
 
 type State = {
   minutes: number | "";
@@ -9,8 +9,8 @@ type State = {
   reset: () => void;
 };
 
-export const useAgendaStore = create<State>()(
-  persist(
+export const useAgendaStore = create<State>(
+
     (set) => ({
       minutes: "",
       hours: "",
@@ -18,6 +18,6 @@ export const useAgendaStore = create<State>()(
       setMinutes: (v) => set({ minutes: v }),
       reset: () => set({ minutes: "", hours: "" }),
     }),
-    { name: "agenda-settings" }
-  )
+
+
 );

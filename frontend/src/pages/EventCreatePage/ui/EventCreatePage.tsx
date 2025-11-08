@@ -30,7 +30,7 @@ export default function EventCreatePage() {
           submitLabel="Создать"
           isSubmitting={mutation.isPending}
           onSubmit={async (payload) => {
-            await mutation.mutateAsync(payload);
+            await mutation.mutateAsync(payload).catch(() => {alert("Ошибка создания события")});
             navigate(-1);
           }}
           onCancel={() => navigate(-1)}

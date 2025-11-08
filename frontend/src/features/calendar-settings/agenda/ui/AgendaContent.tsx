@@ -3,6 +3,8 @@ import { CellList, CellSimple, Button, Panel } from "@maxhub/max-ui";
 import { useAgendaStore } from "../model/agenda.store";
 import { useModalStore } from "@/shared/modal";
 import { useEffect, useState } from "react";
+import { useSettingsMutation } from "@/features/calendar-settings/lib/useSettingsMutation";
+import { toServerTimeNumber } from "@/shared/util/time";
 
 export default function AgendaContent() {
   const hours = useAgendaStore((s) => s.hours);
@@ -10,6 +12,7 @@ export default function AgendaContent() {
   const setMinutes = useAgendaStore((s) => s.setMinutes);
   const setHours = useAgendaStore((s) => s.setHours);
   const close = useModalStore((s) => s.close);
+  const { mutateAsync, isPending } = useSettingsMutation();
   const [valueMinutes, setValueMinutes] = useState<number | "">(minutes);
   const [valueHours, setValueHours] = useState<number | "">(hours);
   const dirty = (valueMinutes !== minutes || valueHours !== hours) || (!valueMinutes && !valueHours );
@@ -29,11 +32,12 @@ export default function AgendaContent() {
     setValueHours("");
   };
   
-  const handleSave = () => {
-    
+  const handleSave = async () => {
+    await mutateAsync({
+      daily_reminder_time: toServerTimeNumber(valueHours, valueMinutes),
+    }).catch(() => {alert("Ошибка сохранения времени напоминания")});
     setHours(valueHours);
     setMinutes(valueMinutes);
-
     close();
   };
 
@@ -49,16 +53,17 @@ export default function AgendaContent() {
           />
         </CellSimple>
         <div className="flex gap-2 mt-4">
+          
+          <Button mode="secondary" className="flex-1" onClick={handleReset}>
+            Сбросить
+          </Button>
           <Button
             mode="primary"
             className="flex-1"
-            disabled={!dirty}
+            disabled={!dirty || isPending}
             onClick={handleSave}
           >
             Сохранить
-          </Button>
-          <Button mode="secondary" className="flex-1" onClick={handleReset}>
-            Сбросить
           </Button>
         </div>
       </CellList>

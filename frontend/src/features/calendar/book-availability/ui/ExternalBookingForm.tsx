@@ -1,8 +1,9 @@
-import { Button, Panel, Typography, Input, Textarea, Flex } from "@maxhub/max-ui";
+import { Button, Panel, Typography, Input, Textarea, Flex, CellSimple, Spinner } from "@maxhub/max-ui";
 import { useState } from "react";
 
 import { useBookSlotStore } from "../model/book-slot.store";
 import { useBookSlotMutation } from "@/entities/event/model/queries";
+import { FaRegCalendarTimes } from "react-icons/fa";
 
 type ExternalBookingFormProps = {
   calendarId: string;
@@ -31,7 +32,7 @@ export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
       description: description || undefined,
       startsAt: combineDateWithTime(selectedDay.date, selectedRange.start),
       endsAt: combineDateWithTime(selectedDay.date, selectedRange.end),
-    });
+    }).catch(() => {alert("Ошибка бронирования слота")});
     setTitle("");
     setDescription("");
     close();
@@ -54,14 +55,14 @@ export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
             <Typography.Label className="mb-2 block">
               Доступные слоты
             </Typography.Label>
-            <div className="grid grid-cols-2 gap-2">
-              {availability.length === 0 && (
-                <Typography.Body
-                  variant="small"
-                >
-                  Нет доступного времени
-                </Typography.Body>
+             {availability.length === 0 && (
+                <CellSimple
+                  before={<FaRegCalendarTimes />}
+                  title="Нет доступного времени"
+                />
+
               )}
+            <div className="grid grid-cols-2 gap-2">
               {availability.map((range) => {
                 const isActive =
                   selectedRange?.start === range.start &&
@@ -108,14 +109,7 @@ export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
               disabled={isSubmitDisabled || mutation.isPending}
               onClick={handleSubmit}
             >
-              {mutation.isPending ? "Бронируем…" : "Забронировать"}
-            </Button>
-            <Button
-              mode="secondary"
-              appearance="neutral-themed"
-              onClick={close}
-            >
-              Отмена
+              {mutation.isPending ? <Spinner size={16} title="Загрузка..." /> : "Забронировать"}
             </Button>
           </Flex>
         </Panel>
