@@ -1,6 +1,8 @@
 import { CellList, Typography, Switch, CellSimple, Button, Panel } from '@maxhub/max-ui'
-
 import { useMeetingPeriodsStore } from '../model/meeting-periods.store';
+import { useModalStore } from '@/shared/modal';
+
+
 
 
 
@@ -18,6 +20,11 @@ const LABELS: { key: 5 | 10 | 15 | 30 | 45 | 60 | 90 | 120; label: string }[] = 
 export function MeetingPeriodContent() {
   const periods = useMeetingPeriodsStore((s) => s.periods)
   const toggle = useMeetingPeriodsStore((s) => s.toggle)
+  const close = useModalStore((s) => s.close);
+
+  const handleSave = () => {
+    close()
+  }
 
   return (
     <Panel className='rounded-lg' >
@@ -29,7 +36,7 @@ export function MeetingPeriodContent() {
           after={<Switch checked={periods[d.key]} onChange={() => toggle(d.key)} />}
         />
       ))}
-      <Button mode='primary' className="mt-4 w-full" onClick={() => {/* TODO: save changes */}}>
+      <Button mode='primary' className="mt-4 w-full" onClick={handleSave}>
         Сохранить
       </Button>
     </CellList>

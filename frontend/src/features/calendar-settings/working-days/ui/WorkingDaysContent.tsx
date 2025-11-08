@@ -1,5 +1,7 @@
 import { CellList, Typography, Switch, CellSimple, Button, Panel } from '@maxhub/max-ui'
 import { useWorkingDaysStore } from '../model/working-days.store';
+import { useModalStore } from '@/shared/modal';
+
 
 
 
@@ -17,6 +19,13 @@ export function WorkingDaysContent() {
   const days = useWorkingDaysStore((s) => s.days)
   const toggle = useWorkingDaysStore((s) => s.toggle)
 
+  const close = useModalStore((s) => s.close);
+  
+  const handleSave = () => {
+    close()
+  }
+
+
   return (
     <Panel className='rounded-lg' >
         <CellList  className=" p-3 rounded-lg" mode="full-width" header={<Typography.Title variant='large-strong'>Настройки</Typography.Title>} >
@@ -27,7 +36,7 @@ export function WorkingDaysContent() {
           after={<Switch checked={days[d.key]} onChange={() => toggle(d.key)} />}
         />
       ))}
-      <Button mode='primary' className="mt-4 w-full" onClick={() => {/* TODO: save changes */}}>
+      <Button mode='primary' className="mt-4 w-full" onClick={handleSave}>
         Сохранить
       </Button>
     </CellList>
