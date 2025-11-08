@@ -1,7 +1,6 @@
 from typing import Optional
 
 from backend.exceptions import UserDoesNotExistsError
-
 from backend.services.user_service import UserService
 from backend.services.settings_service import SettingsService
 from backend.schemas.settings_schema import (
