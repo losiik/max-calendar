@@ -117,7 +117,7 @@ async def commit_and_close_session():
 
 async def rollback_and_close_session():
     sess = _session.get()
-    await sess.commit()
+    await sess.rollback()
     await sess.close()
 
 
