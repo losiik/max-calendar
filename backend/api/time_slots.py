@@ -1,4 +1,5 @@
 from datetime import date
+from uuid import UUID
 
 from fastapi import APIRouter, Depends
 from fastapi import HTTPException
@@ -113,3 +114,12 @@ async def update_time_slot(
     )
 
     return time_slot
+
+
+@time_slots_router.delete('/self/{max_id}/{time_slot_id}')
+async def delete_time_slot(
+        max_id: int,
+        time_slot_id: UUID,
+        time_slots_facade: TimeSlotsFacade = Depends(get_time_slots_facade)
+):
+    await time_slots_facade.delete_self_time_slot(max_id=max_id, time_slot_id=time_slot_id)

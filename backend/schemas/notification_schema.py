@@ -20,5 +20,6 @@ class ConfirmTimeSlotNotification(BaseModel):
     meet_end_at: datetime
     title: str
     invite_user_max_id: int
+    owner_user_max_id: int
     owner_user_user_name: str
     confirm: bool

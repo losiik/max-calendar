@@ -56,3 +56,12 @@ class TimeSlotsService:
         return await self._time_slots_repository.find_by_user_id_an_date(
             user_id=user_id, target_date=target_date
         )
+
+    async def get_time_slot(self, time_slot_id: UUID) -> Optional[TimeSlotsModelPydantic]:
+        time_slot = await self._time_slots_repository.find_by_id(
+            entity_id=time_slot_id
+        )
+
+        if time_slot:
+            return TimeSlotsModelPydantic.from_orm(time_slot)
+        return None

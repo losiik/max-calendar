@@ -8,7 +8,11 @@ from backend.services.user_service import UserService
 from backend.services.time_slots_service import TimeSlotsService
 from backend.services.share_service import ShareService
 from backend.services.settings_service import SettingsService
-from backend.exceptions import UserDoesNotExistsError, ShareTokenDoesNotExistsError
+from backend.exceptions import (
+    UserDoesNotExistsError,
+    ShareTokenDoesNotExistsError,
+    TimeSlotDoesNotExistsError
+)
 from backend.schemas.notification_schema import Notification, ConfirmTimeSlotNotification
 from backend.schemas.time_slots_schema import (
     SelfTimeSlotsGetResponse,
@@ -308,9 +312,25 @@ class TimeSlotsFacade:
                     meet_end_at=updated_time_slot.meet_end_at,
                     title=updated_time_slot.title,
                     invite_user_max_id=invited_user.max_id,
+                    owner_user_max_id=owner_user.max_id,
                     owner_user_user_name=owner_user.name,
                     confirm=confirm
                 )
             )
 
         return updated_time_slot
+
+    async def delete_self_time_slot(self, max_id: int, time_slot_id: UUID):
+        invited_user = await self._user_service.find_by_max_id(max_id=max_id)
+        if invited_user is None:
+            raise UserDoesNotExistsError
+
+        time_slot = await self._time_slots_service.get_time_slot(time_slot_id=time_slot_id)
+
+        if time_slot is None:
+            raise TimeSlotDoesNotExistsError
+
+        if time_slot.owner_id != invited_user.id:
+            raise TimeSlotDoesNotExistsError
+
+        await self.update_time_slot(time_slot_id=time_slot_id, confirm=False)
