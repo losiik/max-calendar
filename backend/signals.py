@@ -5,3 +5,5 @@ from blinker import signal
 user_register_signal: Final = signal("user.register")
 
 new_slot_signal: Final = signal("new_slot")
+
+confirm_time_slot_signal: Final = signal("confirm_slot")

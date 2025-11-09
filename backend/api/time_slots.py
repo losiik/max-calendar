@@ -9,7 +9,9 @@ from backend.schemas.time_slots_schema import (
     TimeSlotsCreateResponse,
     TimeSlotsSelfCreateRequest,
     SelfTimeSlotsGetResponse,
-    ExternalTimeSlotsGetResponse
+    ExternalTimeSlotsGetResponse,
+    UpdateTimeSlotsRequest,
+    TimeSlotsModelPydantic
 )
 from backend.facade.time_slots_facade import TimeSlotsFacade
 from backend.exceptions import UserDoesNotExistsError, ShareTokenDoesNotExistsError
@@ -85,16 +87,29 @@ async def get_external_time_slots(
         time_slots_facade: TimeSlotsFacade = Depends(get_time_slots_facade)
 ):
     try:
-        pass
+        time_slots = await time_slots_facade.get_external_time_slots(
+            invited_max_id=invited_max_id,
+            owner_token=owner_token,
+            target_date=target_date
+        )
+        return ExternalTimeSlotsGetResponse(time_slots=time_slots)
     except UserDoesNotExistsError:
         raise HTTPException(status_code=409, detail="User does not exists")
     except ShareTokenDoesNotExistsError:
         raise HTTPException(status_code=404, detail="Incorrect token")
 
 
-# @time_slots_router.patch('/', response_model=UserCreateResponse)
-# async def update_time_slot(
-#         user_data: UserCreateRequest,
-#         user_service: UserService = Depends(get_user_service)
-# ):
-#     pass
+@time_slots_router.patch('/', response_model=TimeSlotsModelPydantic)
+async def update_time_slot(
+        update_data: UpdateTimeSlotsRequest,
+        time_slots_facade: TimeSlotsFacade = Depends(get_time_slots_facade)
+):
+    time_slot = await time_slots_facade.update_time_slot(
+        time_slot_id=update_data.time_slot_id,
+        confirm=update_data.confirm,
+        title=update_data.title,
+        description=update_data.description,
+        meeting_url=update_data.meeting_url
+    )
+
+    return time_slot

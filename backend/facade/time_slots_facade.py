@@ -9,7 +9,7 @@ from backend.services.time_slots_service import TimeSlotsService
 from backend.services.share_service import ShareService
 from backend.services.settings_service import SettingsService
 from backend.exceptions import UserDoesNotExistsError, ShareTokenDoesNotExistsError
-from backend.schemas.notification_schema import Notification
+from backend.schemas.notification_schema import Notification, ConfirmTimeSlotNotification
 from backend.schemas.time_slots_schema import (
     SelfTimeSlotsGetResponse,
     GetSelfTimeSlot,
@@ -17,6 +17,7 @@ from backend.schemas.time_slots_schema import (
     GetExternalTimeSlot
 )
 from backend.signals import new_slot_signal
+from backend.signals import confirm_time_slot_signal
 
 
 class TimeSlotsFacade:
@@ -69,7 +70,8 @@ class TimeSlotsFacade:
                 meet_start_at=meet_start_at,
                 meet_end_at=meet_end_at,
                 title=title,
-                description=description
+                description=description,
+                time_slot_id=time_slot.id
             )
         )
         return time_slot.id
@@ -272,3 +274,42 @@ class TimeSlotsFacade:
             invited_booked_slots=invited_booked_slots
         )
         return available_external_slots
+
+    async def update_time_slot(
+            self,
+            time_slot_id: UUID,
+            confirm: Optional[bool] = None,
+            title: Optional[str] = None,
+            description: Optional[str] = None,
+            meeting_url: Optional[str] = None
+    ) -> TimeSlotsModelPydantic:
+        update_data = {}
+        if confirm is not None:
+            update_data['confirm'] = confirm
+        if title:
+            update_data['title'] = title
+        if description:
+            update_data['description'] = description
+        if meeting_url:
+            update_data['meeting_url'] = meeting_url
+
+        updated_time_slot = await self._time_slots_service.update_time_slot(
+            time_slot_id=time_slot_id,
+            update_data=update_data
+        )
+
+        invited_user = await self._user_service.get_by_user_id(user_id=updated_time_slot.invited_id)
+        owner_user = await self._user_service.get_by_user_id(user_id=updated_time_slot.owner_id)
+
+        if confirm is not None:
+            await confirm_time_slot_signal.send_async(
+                ConfirmTimeSlotNotification(
+                    meet_start_at=updated_time_slot.meet_start_at,
+                    meet_end_at=updated_time_slot.meet_end_at,
+                    title=updated_time_slot.title,
+                    invite_user_max_id=invited_user.max_id,
+                    owner_user_user_name=owner_user.name
+                )
+            )
+
+        return updated_time_slot

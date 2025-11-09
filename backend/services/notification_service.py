@@ -1,34 +1,58 @@
 import asyncio
+from uuid import UUID
 
 from maxapi import Bot
 from maxapi.types import ButtonsPayload, CallbackButton
+from maxapi.filters.callback_payload import CallbackPayload
 
 from backend.settings.settings import Settings
-from backend.schemas.notification_schema import Notification
+from backend.schemas.notification_schema import Notification, ConfirmTimeSlotNotification
 from backend.signals import new_slot_signal
+from backend.signals import confirm_time_slot_signal
+
+
+class CreateTimeSlotPayload(CallbackPayload, prefix='create_time_slot'):
+    accept: bool
+    time_slot_id: UUID
 
 
 class NotificationService:
     def __init__(self, settings: Settings):
         self._bot = Bot(settings.max_api_key)
-        new_slot_signal.connect(self._handle_new_notification)
+        new_slot_signal.connect(self._handle_new_slot)
+        confirm_time_slot_signal.connect(self._handle_confirm_time_slot)
 
-    async def _handle_new_notification(self, notification_data: Notification):
-        asyncio.create_task(self.send_notification(notification_data=notification_data))
+    async def _handle_confirm_time_slot(self, notification_data: ConfirmTimeSlotNotification):
+        asyncio.create_task(self.send_notification_confirm_slot(notification_data=notification_data))
 
-    def message_builder(self, notification_data: Notification):
+    async def _handle_new_slot(self, notification_data: Notification):
+        asyncio.create_task(self.send_notification_new_slot(notification_data=notification_data))
+
+    def message_builder_new_slot(self, notification_data: Notification):
         return f"""Пользователь {notification_data.invite_user_name} хочет запланировать с вами встречу
 Название: {notification_data.title}
 Время: с {notification_data.meet_start_at} по {notification_data.meet_end_at}
         """
 
-    async def send_notification(self, notification_data: Notification):
-        message = self.message_builder(notification_data=notification_data)
+    async def send_notification_new_slot(self, notification_data: Notification):
+        message = self.message_builder_new_slot(notification_data=notification_data)
 
         buttons = [
             [
-                CallbackButton(text="Подтвердить", payload="accept"),
-                CallbackButton(text="Отказаться", payload="reject")
+                CallbackButton(
+                    text="Подтвердить",
+                    payload=CreateTimeSlotPayload(
+                        accept=True,
+                        time_slot_id=notification_data.time_slot_id
+                    ).pack()
+                ),
+                CallbackButton(
+                    text="Отказаться",
+                    payload=CreateTimeSlotPayload(
+                        accept=True,
+                        time_slot_id=notification_data.time_slot_id
+                    ).pack()
+                )
             ]
         ]
 
@@ -38,4 +62,22 @@ class NotificationService:
             user_id=notification_data.owner_user_max_id,
             text=message,
             attachments=[payload]
+        )
+
+    def message_builder_confirm_slot(self, notification_data: ConfirmTimeSlotNotification):
+        if notification_data.confirm:
+            confirm_text = "подтвердил"
+        else:
+            confirm_text = "не подтвердил"
+        return f"""Пользователь {notification_data.owner_user_user_name} {confirm_text} с вами встречу
+        Название: {notification_data.title}
+        Время: с {notification_data.meet_start_at} по {notification_data.meet_end_at}
+        """
+
+    async def send_notification_confirm_slot(self, notification_data: ConfirmTimeSlotNotification):
+        message = self.message_builder_confirm_slot(notification_data=notification_data)
+
+        await self._bot.send_message(
+            user_id=notification_data.invite_user_max_id,
+            text=message
         )

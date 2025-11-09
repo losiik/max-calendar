@@ -1,9 +1,10 @@
 from uuid import UUID
 from datetime import datetime, date
-from typing import Optional, List
+from typing import Optional, List, Any
 
 from backend.repository.time_slots_repository import TimeSlotsRepository
 from backend.schemas.time_slots_schema import TimeSlotsModelPydantic
+from backend.schemas.notification_schema import ConfirmTimeSlotNotification
 from backend.models.models import TimeSlots
 
 
@@ -36,8 +37,17 @@ class TimeSlotsService:
         )
         return TimeSlotsModelPydantic.from_orm(time_slot)
 
-    async def update_time_slot(self):
-        pass
+    async def update_time_slot(
+            self,
+            time_slot_id: UUID,
+            update_data: dict[str, Any]
+    ) -> TimeSlotsModelPydantic:
+        updated_time_slot = self._time_slots_repository.update(
+            entity_id=time_slot_id,
+            data=update_data
+        )
+
+        return TimeSlotsModelPydantic.from_orm(updated_time_slot)
 
     async def get_time_self_slots(
             self,
