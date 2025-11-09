@@ -30,3 +30,7 @@ class UserResponse(BaseModel):
     max_id: int
     name: Optional[str] = None
     username: Optional[str] = None
+
+
+class UserNameResponse(BaseModel):
+    name: str
