@@ -35,6 +35,7 @@ class GetSelfTimeSlot(BaseModel):
     meet_end_at: float
     title: Optional[str] = None
     description: Optional[str] = None
+    slot_id: Optional[UUID] = None
 
 
 class GetExternalTimeSlot(BaseModel):

@@ -29,7 +29,7 @@ class ServerService:
     async def update_time_slot(self, time_slot_id: UUID, confirm: bool) -> tuple[dict, int]:
         async with aiohttp.ClientSession(timeout=self.timeout) as session:
             data = {
-                "time_slot_id": time_slot_id,
+                "time_slot_id": str(time_slot_id),
                 "confirm": confirm
             }
             url = f"{self.base_url_api}api/v1/time_slots/"

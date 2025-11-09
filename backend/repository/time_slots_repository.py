@@ -21,6 +21,7 @@ class TimeSlotsRepository(CrudRepository[TimeSlots, UUID]):
 
         stmt = select(TimeSlots).where(
             TimeSlots.owner_id == user_id,
+            TimeSlots.confirm == True,
             func.date(TimeSlots.meet_start_at) == target_date
         )
         result = await db.session.execute(stmt)
