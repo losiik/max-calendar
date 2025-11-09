@@ -56,7 +56,7 @@ async def book_self_time_slot(
         raise HTTPException(status_code=409, detail="User does not exists")
 
 
-@time_slots_router.get('/self/', response_model=SelfTimeSlotsGetResponse)
+@time_slots_router.post('/self/', response_model=SelfTimeSlotsGetResponse)
 async def get_my_time_slots(
         data: SelfTimeSlotsGetRequests,
         time_slots_facade: TimeSlotsFacade = Depends(get_time_slots_facade)
