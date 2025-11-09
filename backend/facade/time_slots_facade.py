@@ -209,6 +209,8 @@ class TimeSlotsFacade:
             max_id: int,
             target_date: date
     ) -> SelfTimeSlotsGetResponse:
+        result_slots = []
+
         user = await self._user_service.find_by_max_id(max_id=max_id)
         if user is None:
             raise UserDoesNotExistsError
@@ -218,18 +220,16 @@ class TimeSlotsFacade:
             target_date=target_date
         )
 
-        user_settings = await self._settings_service.get_settings(user_id=user.id)
-
-        all_slots = self.generate_daily_time_slots(
-            work_time_start=user_settings.work_time_start,
-            work_time_end=user_settings.work_time_end,
-            duration_minutes=user_settings.duration_minutes
-        )
-
-        result_slots = self.merge_slots_with_bookings(
-            all_slots=all_slots,
-            booked_slots=booked_slots
-        )
+        for slot in booked_slots:
+            result_slots.append(
+                GetSelfTimeSlot(
+                    meet_start_at=self.datetime_to_float(slot.meet_start_at),
+                    meet_end_at=self.datetime_to_float(slot.meet_end_at),
+                    title=slot.title,
+                    description=slot.description,
+                    slot_id=slot.id
+                )
+            )
 
         return SelfTimeSlotsGetResponse(time_slots=result_slots)
 
@@ -308,7 +308,8 @@ class TimeSlotsFacade:
                     meet_end_at=updated_time_slot.meet_end_at,
                     title=updated_time_slot.title,
                     invite_user_max_id=invited_user.max_id,
-                    owner_user_user_name=owner_user.name
+                    owner_user_user_name=owner_user.name,
+                    confirm=confirm
                 )
             )
 

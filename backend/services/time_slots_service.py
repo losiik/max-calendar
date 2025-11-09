@@ -4,7 +4,6 @@ from typing import Optional, List, Any
 
 from backend.repository.time_slots_repository import TimeSlotsRepository
 from backend.schemas.time_slots_schema import TimeSlotsModelPydantic
-from backend.schemas.notification_schema import ConfirmTimeSlotNotification
 from backend.models.models import TimeSlots
 
 
@@ -42,7 +41,7 @@ class TimeSlotsService:
             time_slot_id: UUID,
             update_data: dict[str, Any]
     ) -> TimeSlotsModelPydantic:
-        updated_time_slot = self._time_slots_repository.update(
+        updated_time_slot = await self._time_slots_repository.update(
             entity_id=time_slot_id,
             data=update_data
         )
