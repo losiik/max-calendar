@@ -37,8 +37,17 @@ class GetSelfTimeSlot(BaseModel):
     description: Optional[str] = None
 
 
+class GetExternalTimeSlot(BaseModel):
+    meet_start_at: float
+    meet_end_at: float
+
+
 class SelfTimeSlotsGetResponse(BaseModel):
     time_slots: List[GetSelfTimeSlot]
+
+
+class ExternalTimeSlotsGetResponse(BaseModel):
+    time_slots: List[SelfTimeSlotsGetResponse]
 
 
 class TimeSlotsModelPydantic(BaseModel):
