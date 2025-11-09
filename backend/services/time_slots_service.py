@@ -1,6 +1,6 @@
 from uuid import UUID
-from datetime import datetime
-from typing import Optional
+from datetime import datetime, date
+from typing import Optional, List
 
 from backend.repository.time_slots_repository import TimeSlotsRepository
 from backend.schemas.time_slots_schema import TimeSlotsModelPydantic
@@ -39,5 +39,11 @@ class TimeSlotsService:
     async def update_time_slot(self):
         pass
 
-    async def get_time_slots(self):
-        pass
+    async def get_time_self_slots(
+            self,
+            user_id: UUID,
+            target_date: date
+    ) -> List[TimeSlotsModelPydantic]:
+        return await self._time_slots_repository.find_by_user_id_an_date(
+            user_id=user_id, target_date=target_date
+        )

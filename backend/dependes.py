@@ -124,7 +124,8 @@ def get_share_facade() -> ShareFacade:
 _time_slots_facade = TimeSlotsFacade(
     time_slots_service=get_time_slots_service(),
     user_service=get_user_service(),
-    share_service=get_share_service()
+    share_service=get_share_service(),
+    settings_service=get_settings_service()
 )
 
 

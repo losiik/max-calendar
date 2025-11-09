@@ -9,6 +9,7 @@ class SettingsCreateRequest(BaseModel):
     timezone: int
     work_time_start: float
     work_time_end: float
+    duration_minutes: int
     alert_offset_minutes: Optional[int] = None
     daily_reminder_time: Optional[float] = None
     working_days: list[str]  # [пн, вт, ср, чт, пт, сб, вс]
@@ -22,6 +23,7 @@ class SettingsModelPydantic(BaseModel):
     timezone: Optional[int] = None
     work_time_start: Optional[float] = None
     work_time_end: Optional[float] = None
+    duration_minutes: Optional[int] = None
     alert_offset_minutes: Optional[int] = None
     daily_reminder_time: Optional[float] = None
     working_days: Optional[int] = None
@@ -33,6 +35,7 @@ class BaseSettings(BaseModel):
     timezone: Optional[int] = None
     work_time_start: Optional[float] = None
     work_time_end: Optional[float] = None
+    duration_minutes: Optional[int] = None
     alert_offset_minutes: Optional[int] = None
     daily_reminder_time: Optional[float] = None
     working_days: Optional[list[str]] = None  # [пн, вт, ср, чт, пт, сб, вс]
