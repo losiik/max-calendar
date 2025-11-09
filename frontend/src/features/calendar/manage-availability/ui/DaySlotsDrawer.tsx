@@ -102,8 +102,8 @@ export function DaySlotsDrawer() {
                   endsAt: defaultEnd,
                 }}
                 onSubmit={async (payload) => {
-                  const event = await createMutation.mutateAsync(payload);
-                  appendEvent(event);
+                  const event = await createMutation.mutateAsync(payload).catch(() => {alert("Ошибка создания события")});
+                  if (event) appendEvent(event);
                   setFormOpen(false);
                 }}
                 onCancel={() => setFormOpen(false)}
