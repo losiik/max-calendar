@@ -32,6 +32,7 @@ class SettingsFacade:
             timezone=settings.timezone,
             work_time_start=settings.work_time_start,
             work_time_end=settings.work_time_end,
+            duration_minutes=settings.duration_minutes,
             alert_offset_minutes=settings.alert_offset_minutes,
             daily_reminder_time=settings.daily_reminder_time,
             working_days=settings.working_days
@@ -52,6 +53,7 @@ class SettingsFacade:
             timezone: Optional[int] = None,
             work_time_start: Optional[float] = None,
             work_time_end: Optional[float] = None,
+            duration_minutes: Optional[int] = None,
             alert_offset_minutes: Optional[int] = None,
             daily_reminder_time: Optional[float] = None,
             working_days: list[str] = None
@@ -68,6 +70,8 @@ class SettingsFacade:
             update_data_dict["work_time_start"] = work_time_start
         if work_time_end:
             update_data_dict["work_time_end"] = work_time_end
+        if duration_minutes:
+            update_data_dict["duration_minutes"] = duration_minutes
         if alert_offset_minutes:
             update_data_dict["alert_offset_minutes"] = alert_offset_minutes
         if daily_reminder_time:

@@ -1,6 +1,6 @@
 from uuid import UUID
-from typing import Optional
-from datetime import datetime
+from typing import Optional, List
+from datetime import datetime, date
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -17,8 +17,28 @@ class TimeSlotsCreateRequest(TimeSlots):
     invited_max_id: int
 
 
+class TimeSlotsSelfCreateRequest(TimeSlots):
+    max_id: int
+
+
 class TimeSlotsCreateResponse(BaseModel):
     id: UUID
+
+
+class SelfTimeSlotsGetRequests(BaseModel):
+    max_id: int
+    date: date
+
+
+class GetSelfTimeSlot(BaseModel):
+    meet_start_at: float
+    meet_end_at: float
+    title: Optional[str] = None
+    description: Optional[str] = None
+
+
+class SelfTimeSlotsGetResponse(BaseModel):
+    time_slots: List[GetSelfTimeSlot]
 
 
 class TimeSlotsModelPydantic(BaseModel):
@@ -33,4 +53,3 @@ class TimeSlotsModelPydantic(BaseModel):
     meeting_url: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
-

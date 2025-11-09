@@ -85,6 +85,7 @@ class SettingsService:
             timezone: Optional[int] = None,
             work_time_start: Optional[float] = None,
             work_time_end: Optional[float] = None,
+            duration_minutes: Optional[int] = None,
             alert_offset_minutes: Optional[int] = None,
             daily_reminder_time: Optional[float] = None,
             working_days: Optional[list[str]] = None
@@ -102,6 +103,7 @@ class SettingsService:
             timezone=timezone,
             work_time_start=work_time_start,
             work_time_end=work_time_end,
+            duration_minutes=duration_minutes,
             alert_offset_minutes=alert_offset_minutes,
             daily_reminder_time=daily_reminder_time,
             working_days=working_days_bit_mask

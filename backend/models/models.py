@@ -40,6 +40,7 @@ class Settings(Base):
     timezone = Column(Integer, nullable=True, default=0)
     work_time_start = Column(Float, nullable=True)
     work_time_end = Column(Float, nullable=True)
+    duration_minutes = Column(Integer, nullable=True)
     alert_offset_minutes = Column(Integer, nullable=True)
     daily_reminder_time = Column(Float, nullable=True)
     working_days = Column(Integer, nullable=True)
