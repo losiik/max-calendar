@@ -46,6 +46,7 @@ async def update_settings(
             timezone=update_data.timezone,
             work_time_start=update_data.work_time_start,
             work_time_end=update_data.work_time_end,
+            duration_minutes=update_data.duration_minutes,
             alert_offset_minutes=update_data.alert_offset_minutes,
             daily_reminder_time=update_data.daily_reminder_time,
             working_days=update_data.working_days

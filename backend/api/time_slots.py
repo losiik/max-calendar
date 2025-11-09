@@ -64,11 +64,14 @@ async def get_my_time_slots(
         target_date: date,
         time_slots_facade: TimeSlotsFacade = Depends(get_time_slots_facade)
 ):
-    time_slots = await time_slots_facade.get_self_time_slot(
-        max_id=max_id,
-        target_date=target_date
-    )
-    return time_slots
+    try:
+        time_slots = await time_slots_facade.get_self_time_slot(
+            max_id=max_id,
+            target_date=target_date
+        )
+        return time_slots
+    except UserDoesNotExistsError:
+        raise HTTPException(status_code=409, detail="User does not exists")
 
 
 @time_slots_router.get(
@@ -77,11 +80,16 @@ async def get_my_time_slots(
 )
 async def get_external_time_slots(
         invited_max_id: int,
-        owner_hash: str,
+        owner_token: str,
         target_date: date,
         time_slots_facade: TimeSlotsFacade = Depends(get_time_slots_facade)
 ):
-    pass
+    try:
+        pass
+    except UserDoesNotExistsError:
+        raise HTTPException(status_code=409, detail="User does not exists")
+    except ShareTokenDoesNotExistsError:
+        raise HTTPException(status_code=404, detail="Incorrect token")
 
 
 # @time_slots_router.patch('/', response_model=UserCreateResponse)
