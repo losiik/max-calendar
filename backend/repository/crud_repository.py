@@ -55,6 +55,10 @@ class CrudRepository(Generic[_T, _ID]):
         await db.session.execute(stmt_update)
         await db.session.commit()
 
+        stmt_select = select(self.entity_class).where(self.entity_class.id == entity_id)
+        result_select = await db.session.execute(stmt_select)
+        entity = result_select.scalar_one_or_none()
+
         return entity
 
     async def find_by_id(self, entity_id: _ID, options = None) -> Optional[_T]:

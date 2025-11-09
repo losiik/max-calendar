@@ -76,6 +76,7 @@ class SettingsService:
             work_time_end=model.work_time_end,
             alert_offset_minutes=model.alert_offset_minutes,
             daily_reminder_time=model.daily_reminder_time,
+            duration_minutes=model.duration_minutes,
             working_days=working_days
         )
 
@@ -120,7 +121,8 @@ class SettingsService:
             entity_id=settings.id,
             data=update_data
         )
-        return SettingsModelPydantic.from_orm(updated_settings)
+        s = SettingsModelPydantic.from_orm(updated_settings)
+        return s
 
     async def get_settings(self, user_id: UUID) -> SettingsModelPydantic:
         settings = await self._settings_repository.find_by_user_id(user_id=user_id)
