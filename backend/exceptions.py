@@ -8,3 +8,7 @@ class UserDoesNotExistsError(Exception):
 
 class ShareTokenDoesNotExistsError(Exception):
     """ Token does not exists """
+
+
+class TimeSlotDoesNotExistsError(Exception):
+    """ Slot does not exists """
