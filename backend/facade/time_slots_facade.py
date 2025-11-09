@@ -10,7 +10,12 @@ from backend.services.share_service import ShareService
 from backend.services.settings_service import SettingsService
 from backend.exceptions import UserDoesNotExistsError, ShareTokenDoesNotExistsError
 from backend.schemas.notification_schema import Notification
-from backend.schemas.time_slots_schema import SelfTimeSlotsGetResponse, GetSelfTimeSlot, TimeSlotsModelPydantic
+from backend.schemas.time_slots_schema import (
+    SelfTimeSlotsGetResponse,
+    GetSelfTimeSlot,
+    TimeSlotsModelPydantic,
+    GetExternalTimeSlot
+)
 from backend.signals import new_slot_signal
 
 
@@ -93,6 +98,9 @@ class TimeSlotsFacade:
 
         return time_slot.id
 
+    def is_overlap(self, start1: float, end1: float, start2: float, end2: float) -> bool:
+        return not (end1 <= start2 or start1 >= end2)
+
     def float_time_to_minutes(self, t: float) -> int:
         hours = int(math.floor(t))
         minutes = int(round((t - hours) * 100))
@@ -107,6 +115,39 @@ class TimeSlotsFacade:
 
     def datetime_to_float(self, dt: datetime) -> float:
         return float(f"{dt.hour}.{dt.minute:02d}")
+
+    def get_available_external_slots(
+            self,
+            all_slots: List[GetSelfTimeSlot],
+            owner_booked_slots: List[TimeSlotsModelPydantic],
+            invited_booked_slots: List[TimeSlotsModelPydantic]
+    ) -> List[GetExternalTimeSlot]:
+        owner_confirmed = [s for s in owner_booked_slots if s.confirm]
+        invited_confirmed = [s for s in invited_booked_slots if s.confirm]
+
+        booked_intervals = []
+        for s in owner_confirmed + invited_confirmed:
+            booked_intervals.append((
+                self.datetime_to_float(s.meet_start_at),
+                self.datetime_to_float(s.meet_end_at)
+            ))
+
+        free_slots: List[GetExternalTimeSlot] = []
+
+        for slot in all_slots:
+            overlaps = any(
+                self.is_overlap(slot.meet_start_at, slot.meet_end_at, start, end)
+                for start, end in booked_intervals
+            )
+            if not overlaps:
+                free_slots.append(
+                    GetExternalTimeSlot(
+                        meet_start_at=slot.meet_start_at,
+                        meet_end_at=slot.meet_end_at
+                    )
+                )
+
+        return free_slots
 
     def merge_slots_with_bookings(
             self,
@@ -189,3 +230,45 @@ class TimeSlotsFacade:
         )
 
         return SelfTimeSlotsGetResponse(time_slots=result_slots)
+
+    async def get_external_time_slots(
+            self,
+            invited_max_id: int,
+            owner_token: str,
+            target_date: date
+    ) -> List[GetExternalTimeSlot]:
+        invited_user = await self._user_service.find_by_max_id(max_id=invited_max_id)
+        if invited_user is None:
+            raise UserDoesNotExistsError
+
+        share_data = await self._share_service.get_share_data_by_token(token=owner_token)
+
+        if share_data is None:
+            raise ShareTokenDoesNotExistsError
+
+        owner_user = await self._user_service.get_by_user_id(user_id=share_data.owner_id)
+
+        owner_booked_slots = await self._time_slots_service.get_time_self_slots(
+            user_id=owner_user.id,
+            target_date=target_date
+        )
+
+        invited_booked_slots = await self._time_slots_service.get_time_self_slots(
+            user_id=invited_user.id,
+            target_date=target_date
+        )
+
+        owner_settings = await self._settings_service.get_settings(user_id=owner_user.id)
+
+        all_owner_slots = self.generate_daily_time_slots(
+            work_time_start=owner_settings.work_time_start,
+            work_time_end=owner_settings.work_time_end,
+            duration_minutes=owner_settings.duration_minutes
+        )
+
+        available_external_slots = self.get_available_external_slots(
+            all_slots=all_owner_slots,
+            owner_booked_slots=owner_booked_slots,
+            invited_booked_slots=invited_booked_slots
+        )
+        return available_external_slots
