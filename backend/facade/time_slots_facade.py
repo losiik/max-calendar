@@ -330,7 +330,4 @@ class TimeSlotsFacade:
         if time_slot is None:
             raise TimeSlotDoesNotExistsError
 
-        if time_slot.owner_id != invited_user.id:
-            raise TimeSlotDoesNotExistsError
-
         await self.update_time_slot(time_slot_id=time_slot_id, confirm=False)
