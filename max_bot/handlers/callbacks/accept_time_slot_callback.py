@@ -22,9 +22,12 @@ async def accept_time_slot(
         payload: CreateTimeSlotPayload,
         share_service: TimeSlotService = get_time_slot_service()
 ):
-    await share_service.update_time_slot(
+    updated_time_slot = await share_service.update_time_slot(
         time_slot_id=payload.time_slot_id,
         confirm=payload.accept
     )
 
-    await callback.message.answer(text="Ответ")
+    if updated_time_slot:
+        await callback.message.answer(text="Встреча запланирована!")
+    else:
+        await callback.message.answer(text="Что-то пошло не так. Попробуйте еще раз")
