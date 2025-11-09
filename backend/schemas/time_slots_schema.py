@@ -62,3 +62,15 @@ class TimeSlotsModelPydantic(BaseModel):
     meeting_url: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class UpdateTimeSlots(BaseModel):
+    time_slot_id: UUID
+    confirm: Optional[bool] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    meeting_url: Optional[str] = None
+
+
+class UpdateTimeSlotsRequest(UpdateTimeSlots):
+    pass
