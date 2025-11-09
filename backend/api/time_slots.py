@@ -78,7 +78,7 @@ async def get_my_time_slots(
 
 
 @time_slots_router.get(
-    '/{invited_max_id}/{owner_hash}/{target_date}',
+    '/{invited_max_id}/{owner_token}/{target_date}',
     response_model=ExternalTimeSlotsGetResponse
 )
 async def get_external_time_slots(
