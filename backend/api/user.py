@@ -1,9 +1,15 @@
 from fastapi import APIRouter, Depends
 from fastapi import HTTPException
 
-from backend.dependes import get_user_service
-from backend.schemas.user_schema import UserCreateRequest, UserCreateResponse, UserResponse
+from backend.dependes import get_user_service, get_share_facade
+from backend.schemas.user_schema import (
+    UserCreateRequest,
+    UserCreateResponse,
+    UserResponse,
+    UserNameResponse
+)
 from backend.services.user_service import UserService
+from backend.facade.share_facade import ShareFacade
 from backend.exceptions import UserAlreadyExistsError
 
 import logging
@@ -47,3 +53,12 @@ async def get_user(
             username=user.username
         )
     raise HTTPException(status_code=409, detail="User does not exists")
+
+
+@user_router.get('/by/token/{token}', response_model=UserNameResponse)
+async def get_name_by_token(
+        token: str,
+        share_facade: ShareFacade = Depends(get_share_facade)
+):
+    user = await share_facade.get_user_by_token(token=token)
+    return UserNameResponse(name=user.name)

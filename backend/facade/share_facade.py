@@ -1,6 +1,7 @@
 from backend.services.share_service import ShareService
 from backend.services.user_service import UserService
 from backend.exceptions import UserDoesNotExistsError
+from backend.schemas.user_schema import UserModelPydantic
 
 
 class ShareFacade:
@@ -15,3 +16,8 @@ class ShareFacade:
 
         token = await self._share_service.get_share_token(user_id=user.id)
         return token
+
+    async def get_user_by_token(self, token: str) -> UserModelPydantic:
+        share_data = await self._share_service.get_share_data_by_token(token=token)
+        user = await self._user_service.get_by_user_id(user_id=share_data.owner_id)
+        return user
