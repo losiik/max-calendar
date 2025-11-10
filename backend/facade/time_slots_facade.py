@@ -326,6 +326,7 @@ class TimeSlotsFacade:
                     meet_end_at=updated_time_slot.meet_end_at,
                     title=updated_time_slot.title,
                     invite_user_max_id=invited_user.max_id,
+                    invite_use_name=invited_user.name,
                     owner_user_max_id=owner_user.max_id,
                     owner_user_user_name=owner_user.name,
                     confirm=confirm,

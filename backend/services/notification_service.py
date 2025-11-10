@@ -49,7 +49,7 @@ class NotificationService:
                 CallbackButton(
                     text="Отказаться",
                     payload=CreateTimeSlotPayload(
-                        accept=True,
+                        accept=False,
                         time_slot_id=notification_data.time_slot_id
                     ).pack()
                 )
@@ -86,7 +86,7 @@ class NotificationService:
         else:
             confirm_text = "отменили"
 
-        return f"""Вы успешно {confirm_text} встречу с {notification_data.owner_user_user_name}
+        return f"""Вы успешно {confirm_text} встречу с {notification_data.invite_use_name}
 Название: {notification_data.title}
 Время: с {notification_data.meet_start_at} по {notification_data.meet_end_at}
 Ссылка на встречу: {notification_data.meeting_url}
