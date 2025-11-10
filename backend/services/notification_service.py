@@ -64,7 +64,7 @@ class NotificationService:
             attachments=[payload]
         )
 
-    def message_builder_confirm_slot(self, notification_data: ConfirmTimeSlotNotification):
+    def message_invited_builder_confirm_slot(self, notification_data: ConfirmTimeSlotNotification):
         if notification_data.owner_user_max_id == notification_data.invite_user_max_id:
             return f"""Вы отменили встречу
 Название: {notification_data.title}    
@@ -80,10 +80,28 @@ class NotificationService:
 Ссылка на встречу: {notification_data.meeting_url}
         """
 
+    def message_owner_builder_confirm_slot(self, notification_data: ConfirmTimeSlotNotification):
+        if notification_data.confirm:
+            confirm_text = "подтвердили"
+        else:
+            confirm_text = "отменили"
+
+        return f"""Вы успешно {confirm_text} встречу с {notification_data.owner_user_user_name}
+Название: {notification_data.title}
+Время: с {notification_data.meet_start_at} по {notification_data.meet_end_at}
+Ссылка на встречу: {notification_data.meeting_url}
+"""
+
     async def send_notification_confirm_slot(self, notification_data: ConfirmTimeSlotNotification):
-        message = self.message_builder_confirm_slot(notification_data=notification_data)
+        message_invited = self.message_invited_builder_confirm_slot(notification_data=notification_data)
+        message_owner = self.message_owner_builder_confirm_slot(notification_data=notification_data)
 
         await self._bot.send_message(
             user_id=notification_data.invite_user_max_id,
-            text=message
+            text=message_invited
+        )
+
+        await self._bot.send_message(
+            user_id=notification_data.owner_user_max_id,
+            text=message_owner
         )
