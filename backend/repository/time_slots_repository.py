@@ -34,6 +34,28 @@ class TimeSlotsRepository(CrudRepository[TimeSlots, UUID]):
 
         return slot_list
 
+    async def find_user_invited_byuser_id_an_date(
+            self,
+            user_id: UUID,
+            target_date: date
+    ) -> List[TimeSlotsModelPydantic]:
+        slot_list = []
+
+        stmt = select(TimeSlots).where(
+            TimeSlots.invited_id == user_id,
+            TimeSlots.confirm == True,
+            func.date(TimeSlots.meet_start_at) == target_date
+        )
+        result = await db.session.execute(stmt)
+        time_slots = result.scalars().all()
+
+        for time_slot in time_slots:
+            slot_list.append(
+                TimeSlotsModelPydantic.from_orm(time_slot)
+            )
+
+        return slot_list
+
     async def find_upcoming(
             self,
             current_time: datetime

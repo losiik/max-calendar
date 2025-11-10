@@ -53,9 +53,13 @@ class TimeSlotsService:
             user_id: UUID,
             target_date: date
     ) -> List[TimeSlotsModelPydantic]:
-        return await self._time_slots_repository.find_by_user_id_an_date(
+        time_slots_where_owner = await self._time_slots_repository.find_by_user_id_an_date(
             user_id=user_id, target_date=target_date
         )
+        time_slots_where_invited = await self._time_slots_repository.find_user_invited_byuser_id_an_date(
+            user_id=user_id, target_date=target_date
+        )
+        return time_slots_where_owner + time_slots_where_invited
 
     async def get_time_slot(self, time_slot_id: UUID) -> Optional[TimeSlotsModelPydantic]:
         time_slot = await self._time_slots_repository.find_by_id(
