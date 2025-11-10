@@ -7,3 +7,5 @@ user_register_signal: Final = signal("user.register")
 new_slot_signal: Final = signal("new_slot")
 
 confirm_time_slot_signal: Final = signal("confirm_slot")
+
+alert_before_meet_signal: Final = signal("alert_before_meet")

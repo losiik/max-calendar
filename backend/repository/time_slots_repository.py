@@ -1,5 +1,5 @@
 from uuid import UUID
-from datetime import date
+from datetime import datetime, date
 from typing import List
 
 from sqlalchemy import func
@@ -31,5 +31,28 @@ class TimeSlotsRepository(CrudRepository[TimeSlots, UUID]):
             slot_list.append(
                 TimeSlotsModelPydantic.from_orm(time_slot)
             )
+
+        return slot_list
+
+    async def find_upcoming(
+            self,
+            current_time: datetime
+    ) -> List[TimeSlotsModelPydantic]:
+        slot_list = []
+
+        stmt = (
+            select(TimeSlots)
+            .where(
+                TimeSlots.confirm == True,
+                TimeSlots.meet_end_at > current_time
+            )
+            .order_by(TimeSlots.meet_start_at.asc())
+        )
+
+        result = await db.session.execute(stmt)
+        time_slots = result.scalars().all()
+
+        for time_slot in time_slots:
+            slot_list.append(TimeSlotsModelPydantic.from_orm(time_slot))
 
         return slot_list

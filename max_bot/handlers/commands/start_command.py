@@ -34,21 +34,13 @@ async def bot_started(
     )
 
 
-# Ответ бота на команду /start
 @start_router.message_created(Command('start'))
 async def hello(event: MessageCreated):
-    buttons = [
-        [get_open_calendar_button()],
-        [CallbackButton(text="Поделиться календарем", payload="share_link")]
-    ]
-    print(event.__dict__)
-
-    payload = ButtonsPayload(buttons=buttons).pack()
-    # print(event)
-    # print(event.__dict__)
-    # print(event.message.from_user)
-    print(event.from_user)
-    await event.message.answer(
-        text=f"Я самый удобный календарь в мире! Я делаю встречи еще удобнее! Чтобы продолжить, необходимо перейти в настройки",
-        attachments=[payload]
+    m = await event.message.answer(
+        text=f"список команд:"
+             f"/calendar - мой календарь"
+             f"/start - запустить бот"
+             f"/schedule_today - расписание на сегодня"
+             f"/share - поделиться календарем"
     )
+    await m.pin()

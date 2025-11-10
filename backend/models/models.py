@@ -63,3 +63,12 @@ class Share(Base):
     owner_id = Column(UUID, ForeignKey('user.id', ondelete='CASCADE'))
     share_token = Column(String, nullable=False, unique=True)
     created_at = Column(DateTime, nullable=False)
+
+
+class TimeSlotAlert(Base):
+    __tablename__ = "time_slot_alert"
+
+    id = Column(UUID, primary_key=True)
+    user_id = Column(UUID, ForeignKey('user.id', ondelete='CASCADE'))
+    time_slot_id = Column(UUID, ForeignKey('time_slots.id', ondelete='CASCADE'))
+    sent_at = Column(DateTime, nullable=False)
