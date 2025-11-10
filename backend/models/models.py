@@ -1,21 +1,16 @@
 from datetime import datetime
-from types import MappingProxyType
-from typing import Final, List
 
 from sqlalchemy import (
     Column,
     String,
     ForeignKey,
-    Date,
     DateTime,
     BigInteger,
-    Enum,
     Float,
     Boolean,
     Integer
 )
-from sqlalchemy.dialects.postgresql import JSONB, UUID, ARRAY
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.dialects.postgresql import UUID
 
 from backend.database import Base
 

@@ -23,3 +23,4 @@ class ConfirmTimeSlotNotification(BaseModel):
     owner_user_max_id: int
     owner_user_user_name: str
     confirm: bool
+    meeting_url: str
