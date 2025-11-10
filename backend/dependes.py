@@ -15,6 +15,22 @@ from backend.facade.settings_facade import SettingsFacade
 from backend.facade.share_facade import ShareFacade
 from backend.facade.time_slots_facade import TimeSlotsFacade
 
+from backend.client.sber_jazz_client import SberJazzClient
+
+#######################
+#       Client        #
+#######################
+
+
+_sber_jazz_client = SberJazzClient(
+    settings=settings
+)
+
+
+def get_sber_jazz_client() -> SberJazzClient:
+    return _sber_jazz_client
+
+
 #######################
 #      Repository     #
 #######################
@@ -125,7 +141,8 @@ _time_slots_facade = TimeSlotsFacade(
     time_slots_service=get_time_slots_service(),
     user_service=get_user_service(),
     share_service=get_share_service(),
-    settings_service=get_settings_service()
+    settings_service=get_settings_service(),
+    sber_jazz_client=get_sber_jazz_client()
 )
 
 

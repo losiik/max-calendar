@@ -20,6 +20,7 @@ from backend.schemas.time_slots_schema import (
     TimeSlotsModelPydantic,
     GetExternalTimeSlot
 )
+from backend.client.sber_jazz_client import SberJazzClient
 from backend.signals import new_slot_signal
 from backend.signals import confirm_time_slot_signal
 
@@ -30,12 +31,14 @@ class TimeSlotsFacade:
             user_service: UserService,
             time_slots_service: TimeSlotsService,
             share_service: ShareService,
-            settings_service: SettingsService
+            settings_service: SettingsService,
+            sber_jazz_client: SberJazzClient
     ):
         self._user_service = user_service
         self._time_slots_service = time_slots_service
         self._share_service = share_service
         self._settings_service = settings_service
+        self._sber_jazz_client = sber_jazz_client
 
     async def create_time_slot(
             self,
@@ -287,6 +290,9 @@ class TimeSlotsFacade:
             description: Optional[str] = None,
             meeting_url: Optional[str] = None
     ) -> TimeSlotsModelPydantic:
+        time_slot = await self._time_slots_service.get_time_slot(
+            time_slot_id=time_slot_id
+        )
         update_data = {}
         if confirm is not None:
             update_data['confirm'] = confirm
@@ -295,6 +301,14 @@ class TimeSlotsFacade:
         if description:
             update_data['description'] = description
         if meeting_url:
+            update_data['meeting_url'] = meeting_url
+
+        if confirm:
+            meeting_url = await self._sber_jazz_client.create_meeting(
+                user_id=time_slot.owner_id,
+                title=time_slot.title,
+                description=time_slot.description
+            )
             update_data['meeting_url'] = meeting_url
 
         updated_time_slot = await self._time_slots_service.update_time_slot(
@@ -314,7 +328,8 @@ class TimeSlotsFacade:
                     invite_user_max_id=invited_user.max_id,
                     owner_user_max_id=owner_user.max_id,
                     owner_user_user_name=owner_user.name,
-                    confirm=confirm
+                    confirm=confirm,
+                    meeting_url=meeting_url
                 )
             )
 

@@ -77,6 +77,7 @@ class NotificationService:
         return f"""Пользователь {notification_data.owner_user_user_name} {confirm_text} с вами встречу
 Название: {notification_data.title}
 Время: с {notification_data.meet_start_at} по {notification_data.meet_end_at}
+Ссылка на встречу: {notification_data.meeting_url}
         """
 
     async def send_notification_confirm_slot(self, notification_data: ConfirmTimeSlotNotification):
