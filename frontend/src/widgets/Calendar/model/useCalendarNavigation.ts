@@ -6,11 +6,13 @@ import type {
 } from "@/entities/event/model/types";
 import { toLocalISODate } from "@/shared/util/date";
 
+
 export type CalendarViewDay = CalendarDay & {
   isoDate: ISODateString;
   dateObj: Date;
   inCurrentMonth: boolean;
   isToday: boolean;
+  isDisabled?: boolean;
 };
 
 type Options = {
@@ -58,6 +60,20 @@ export const useCalendarNavigation = (
   );
 
   useEffect(() => {
+    if (!options?.initialDate) return;
+    setViewDate((prev) => {
+      const incoming = options.initialDate as Date;
+      if (
+        prev.getFullYear() === incoming.getFullYear() &&
+        prev.getMonth() === incoming.getMonth()
+      ) {
+        return prev;
+      }
+      return incoming;
+    });
+  }, [options?.initialDate]);
+
+  useEffect(() => {
     if (options?.selectedDate) {
       setSelectedDate(options.selectedDate);
     }
@@ -69,7 +85,6 @@ export const useCalendarNavigation = (
   );
 
   const gridDates = useMemo(() => buildGrid(viewDate), [viewDate]);
-
   const viewDays: CalendarViewDay[] = useMemo(
     () =>
       gridDates.map((date) => {
@@ -83,6 +98,7 @@ export const useCalendarNavigation = (
           isToday: isSameDay(date, today),
           events: source?.events ?? [],
           availability: source?.availability,
+          isDisabled: source?.isDisabled ?? false,
         };
       }),
     [gridDates, sourceMap, today, viewDate]

@@ -20,13 +20,15 @@ const buildEvent = (
   durationMinutes: number,
   title: string
 ): CalendarEvent => {
+  const id = uid();
   const start = new Date(date);
   start.setHours(startHours, startMinutes, 0, 0);
   const end = new Date(start);
   end.setMinutes(end.getMinutes() + durationMinutes);
 
   return {
-    id: uid(),
+    id,
+    slotId: id,
     title,
     description: "",
     startsAt: start.toISOString(),
@@ -93,6 +95,7 @@ export let mockSettings: SettingsResponse = {
   timezone: 0,
   work_time_start: 9,
   work_time_end: 18,
+  duration_minutes: 30,
   alert_offset_minutes: 30,
   daily_reminder_time: 9,
   working_days: ["пн", "вт", "ср", "чт", "пт"],
@@ -126,24 +129,60 @@ export const mockGuestMeta: Record<string, GuestMeta> = {
 };
 
 export const pushPersonalEvent = (event: CalendarEvent) => {
+  const normalizedId = event.id ?? uid();
+  const normalized: CalendarEvent = {
+    ...event,
+    id: normalizedId,
+    slotId: event.slotId ?? normalizedId,
+    slot_id: event.slot_id ?? event.slotId ?? normalizedId,
+  };
   const date = event.startsAt.slice(0, 10);
   const day = mockPersonalDays.find((d) => d.date === date);
   if (day) {
-    day.events = [...(day.events ?? []), event];
+    day.events = [...(day.events ?? []), normalized];
   } else {
-    mockPersonalDays.push({ date, events: [event] });
+    mockPersonalDays.push({ date, events: [normalized] });
   }
 };
 
 export const pushSharedEvent = (calendarId: string, event: CalendarEvent) => {
+  const normalizedId = event.id ?? uid();
+  const normalized: CalendarEvent = {
+    ...event,
+    id: normalizedId,
+    slotId: event.slotId ?? normalizedId,
+    slot_id: event.slot_id ?? event.slotId ?? normalizedId,
+  };
   const calendar = mockSharedCalendars[calendarId] ?? [];
-  const date = event.startsAt.slice(0, 10);
+  const date = normalized.startsAt.slice(0, 10);
   const day = calendar.find((d) => d.date === date);
   if (day) {
-    day.events = [...(day.events ?? []), event];
+    day.events = [...(day.events ?? []), normalized];
   } else {
-    calendar.push({ date, events: [event] });
+    calendar.push({ date, events: [normalized] });
   }
   mockSharedCalendars[calendarId] = calendar;
-  pushPersonalEvent(event);
+  pushPersonalEvent(normalized);
+};
+
+export const removeMockPersonalEvent = (slotId: string) => {
+  const matcher = (event?: CalendarEvent) =>
+    event
+      ? event.slotId === slotId ||
+        event.slot_id === slotId ||
+        event.id === slotId
+      : false;
+
+  mockPersonalDays.forEach((day) => {
+    if (!day.events) return;
+    day.events = day.events.filter((event) => !matcher(event));
+  });
+
+  Object.keys(mockSharedCalendars).forEach((key) => {
+    const calendar = mockSharedCalendars[key];
+    calendar.forEach((day) => {
+      if (!day.events) return;
+      day.events = day.events.filter((event) => !matcher(event));
+    });
+  });
 };

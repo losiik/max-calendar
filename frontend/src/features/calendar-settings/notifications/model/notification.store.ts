@@ -4,7 +4,7 @@ import { create } from 'zustand';
 type NotificationState = {
 
   leadTimeMin: number;
-  setLeadTime: (min: number) => void;
+  setLeadTime: (min: number | undefined) => void;
   reset: () => void;
 };
 

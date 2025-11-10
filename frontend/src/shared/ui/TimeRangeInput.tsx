@@ -9,8 +9,6 @@ type Props = {
 
 export function TimeRangeInput({ hours, minutes, onHoursChange, onMinutesChange }: Props) {
   const handleHours = (e: React.ChangeEvent<HTMLInputElement>) => {
-
-    console.log(e.target.value);
     const v = e.target.value.trim()
     if (v === '') return onHoursChange('')
     const vNum = Number(v);
@@ -18,7 +16,6 @@ export function TimeRangeInput({ hours, minutes, onHoursChange, onMinutesChange 
   }
 
   const handleMinutes = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value);
     const v = e.target.value.trim();
     if (v === '') return onMinutesChange('');
     const vNum = Number(v);

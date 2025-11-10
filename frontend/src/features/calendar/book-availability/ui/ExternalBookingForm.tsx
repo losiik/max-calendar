@@ -1,38 +1,74 @@
-import { Button, Panel, Typography, Input, Textarea, Flex, CellSimple, Spinner } from "@maxhub/max-ui";
-import { useState } from "react";
+import {
+  Button,
+  Panel,
+  Typography,
+  Input,
+  Textarea,
+  Flex,
+  Spinner,
+  useColorScheme,
+  CellSimple,
+  CellList,
+} from "@maxhub/max-ui";
+import { useEffect, useState } from "react";
 
 import { useBookSlotStore } from "../model/book-slot.store";
 import { useBookSlotMutation } from "@/entities/event/model/queries";
 import { FaRegCalendarTimes } from "react-icons/fa";
+import { MdCheck, MdClose } from "react-icons/md";
+import { useSettingsQuery } from "@/entities/settings/queries";
 
 type ExternalBookingFormProps = {
   calendarId: string;
 };
-
-const combineDateWithTime = (date: string, time: string) =>
-  new Date(`${date}T${time}:00`).toISOString();
 
 export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
   const { selectedDay, selectedRange, isOpen, close, selectRange } =
     useBookSlotStore();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-
+  const [isSettingsFilledIn, setSettingsFilledIn] = useState(false);
+  const theme = useColorScheme();
   const mutation = useBookSlotMutation(calendarId);
+  const { data: settings } = useSettingsQuery();
+
+
+  useEffect(() => {
+      if (
+    settings &&
+    settings.work_time_end &&
+    settings.work_time_start &&
+    settings.work_time_end !== settings.work_time_start &&
+    settings.working_days?.length &&
+    settings.duration_minutes
+  ) {
+    console.log("settings filled in!");
+    setSettingsFilledIn(true);
+  }
+  }, [settings]);
 
   if (!isOpen || !selectedDay) return null;
 
   const availability = selectedDay.availability ?? [];
   const isSubmitDisabled = !title || !selectedRange;
-
   const handleSubmit = async () => {
     if (!selectedRange) return;
-    await mutation.mutateAsync({
-      title,
-      description: description || undefined,
-      startsAt: combineDateWithTime(selectedDay.date, selectedRange.start),
-      endsAt: combineDateWithTime(selectedDay.date, selectedRange.end),
-    }).catch(() => {alert("Ошибка бронирования слота")});
+    await mutation
+      .mutateAsync({
+        title,
+        description: description || undefined,
+        startsAt:
+          selectedRange.startISO ??
+          new Date(
+            `${selectedDay.date}T${selectedRange.start}:00`
+          ).toISOString(),
+        endsAt:
+          selectedRange.endISO ??
+          new Date(`${selectedDay.date}T${selectedRange.end}:00`).toISOString(),
+      })
+      .catch(() => {
+        alert("Ошибка бронирования слота");
+      });
     setTitle("");
     setDescription("");
     close();
@@ -40,14 +76,22 @@ export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-20">
-      <div className="mx-auto w-full max-w-md p-4">
-        <Panel className="rounded-lg border p-4 shadow-lg">
+      <div className="mx-auto w-full max-w-md ">
+        <Panel
+          className={`rounded-lg border p-4 !pb-8 shadow-xl ${
+            theme === "dark" ? "" : " bg-neutral-100"
+          }`}
+        >
           <div className="flex items-center justify-between">
             <Typography.Title variant="medium-strong">
               Выбор времени
             </Typography.Title>
-            <Button mode="secondary" appearance="neutral-themed" onClick={close}>
-              Закрыть
+            <Button
+              mode="secondary"
+              appearance="neutral-themed"
+              onClick={close}
+            >
+              <MdClose />
             </Button>
           </div>
 
@@ -55,30 +99,34 @@ export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
             <Typography.Label className="mb-2 block">
               Доступные слоты
             </Typography.Label>
-             {availability.length === 0 && (
-                <CellSimple
-                  before={<FaRegCalendarTimes />}
-                  title="Нет доступного времени"
-                />
-
-              )}
-            <div className="grid grid-cols-2 gap-2">
-              {availability.map((range) => {
-                const isActive =
-                  selectedRange?.start === range.start &&
-                  selectedRange?.end === range.end;
-                return (
-                  <Button
-                    key={`${range.start}-${range.end}`}
-                    mode={isActive ? "primary" : "secondary"}
-                    appearance="neutral-themed"
-                    onClick={() => selectRange(range)}
-                  >
-                    {range.start} — {range.end}
-                  </Button>
-                );
-              })}
-            </div>
+            {availability.length === 0 ? (
+              <div className="flex items-center gap-2 rounded-lg border border-dashed border-neutral-300 p-2 text-sm text-neutral-500">
+                <FaRegCalendarTimes />
+                Нет доступного времени
+              </div>
+            ) : isSettingsFilledIn ? (
+              <div className="max-h-[40vh] overflow-y-auto">
+                <CellList mode="island">
+                  {availability.map((range) => {
+                    const isActive =
+                      selectedRange?.start === range.start &&
+                      selectedRange?.end === range.end;
+                    return (
+                      <CellSimple
+                        key={`${range.start}-${range.end}`}
+                        before={isActive ? <MdCheck /> : null}
+                        onClick={() => selectRange(range)}
+                        title={`${range.start} — ${range.end}`}
+                        aria-pressed={isActive}
+                        subtitle={"Свободно"}
+                      ></CellSimple>
+                    );
+                  })}
+                </CellList>
+              </div>
+            ) : (
+              <CellSimple before={<FaRegCalendarTimes />} title={'Вы не выбрали дни недели и время для встреч в настройках, пожалуйста, заполните настройки'} />
+            )}
           </div>
 
           <div className="mt-3 flex flex-col gap-2">
@@ -109,7 +157,11 @@ export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
               disabled={isSubmitDisabled || mutation.isPending}
               onClick={handleSubmit}
             >
-              {mutation.isPending ? <Spinner size={16} title="Загрузка..." /> : "Забронировать"}
+              {mutation.isPending ? (
+                <Spinner size={16} title="Загрузка..." />
+              ) : (
+                "Забронировать"
+              )}
             </Button>
           </Flex>
         </Panel>
