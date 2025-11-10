@@ -5,6 +5,6 @@ WORKDIR /cron
 COPY . /cron
 
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r backend/requirements.txt
+RUN pip install --no-cache-dir -r cron_job/requirements.txt
 
 ENV PYTHONPATH=/cron

@@ -5,6 +5,6 @@ WORKDIR /bot
 COPY . /bot
 
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r backend/requirements.txt
+RUN pip install --no-cache-dir -r max_bot/requirements.txt
 
 ENV PYTHONPATH=/bot
