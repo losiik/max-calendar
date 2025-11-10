@@ -27,5 +27,9 @@ async def accept_time_slot(
         confirm=payload.accept
     )
 
+    await callback.message.edit(
+        attachments=None
+    )
+
     if not updated_time_slot:
         await callback.message.answer(text="Что-то пошло не так. Попробуйте еще раз")
