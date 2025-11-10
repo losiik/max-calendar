@@ -22,5 +22,8 @@ class Settings(BaseSettings):
     # max bot
     max_api_key: str = os.getenv("MAX_API_KEY")
 
+    # sber
+    sber_api_key: str = os.getenv("SBER_API_KEY")
+
 
 settings = Settings()
