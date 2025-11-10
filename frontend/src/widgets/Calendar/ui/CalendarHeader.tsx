@@ -1,4 +1,5 @@
 import { Button, Flex, Typography } from "@maxhub/max-ui";
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 
 type CalendarHeaderProps = {
   monthLabel: string;
@@ -20,22 +21,24 @@ export function CalendarHeader({
       className="mb-4 items-center !justify-between gap-2"
       align="center"
     >
-      <div>
+      <Flex align="center" gap={12}>
+        <Button mode="secondary" appearance="neutral-themed" onClick={onPrev}>
+          {<FaArrowLeft />}
+        </Button>
         <Typography.Title variant="large-strong" className="capitalize">
           {monthLabel}
         </Typography.Title> {' '}
         <Typography.Title className="text-neutral-500">
           {yearLabel}
         </Typography.Title>
-      </div>
+        <Button mode="secondary" appearance="neutral-themed" onClick={onNext}>
+          {<FaArrowRight />}
+        </Button>
+      </Flex>
 
       <Flex gap={6} className="!justify-between">
-        <Button mode="secondary" appearance="neutral-themed" onClick={onPrev}>
-          {'<'}
-        </Button>
-        <Button mode="secondary" appearance="neutral-themed" onClick={onNext}>
-          {'>'}
-        </Button>
+        
+        
         <Button mode="primary" appearance="neutral-themed" onClick={onToday}>
           Сегодня
         </Button>

@@ -12,7 +12,7 @@ type GuestCalendarState = {
   isActive: boolean;
   isLoading: boolean;
   ignoredTokens: string[];
-  initFromPayload: (token: string) => Promise<void>;
+  initFromPayload: (token: string, options?: { activate?: boolean }) => Promise<void>;
   exit: () => void;
 };
 
@@ -21,10 +21,16 @@ export const useGuestCalendarStore = create<GuestCalendarState>((set, get) => ({
   isLoading: false,
   ignoredTokens: [],
 
-  async initFromPayload(token) {
+  async initFromPayload(token, options) {
     if (!token) return;
+    const activate = options?.activate ?? true;
     const state = get();
-    if (state.isActive || state.inviteToken === token) return;
+    if (state.inviteToken === token && state.ownerName) {
+      if (activate && !state.isActive) {
+        set({ isActive: true });
+      }
+      return;
+    }
     if (state.ignoredTokens.includes(token)) return;
 
     set({ isLoading: true });
@@ -37,7 +43,7 @@ export const useGuestCalendarStore = create<GuestCalendarState>((set, get) => ({
         ownerName: meta.ownerName,
         ownerUsername: meta.ownerUsername,
         title: meta.title,
-        isActive: true,
+        isActive: activate,
         isLoading: false,
       });
     } catch (error) {

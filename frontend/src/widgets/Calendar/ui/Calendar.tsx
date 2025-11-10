@@ -1,4 +1,5 @@
 import { Panel, Spinner, Typography } from "@maxhub/max-ui";
+import { useEffect } from "react";
 
 import type {
   CalendarDay,
@@ -15,6 +16,9 @@ type CalendarProps = {
   isLoading?: boolean;
   selectedDate?: ISODateString;
   onSelectDay?: (isoDate: ISODateString) => void;
+  initialDate?: Date;
+  onMonthChange?: (year: number, month: number) => void;
+  disableAllDays?: boolean;
 };
 
 export function Calendar({
@@ -22,6 +26,9 @@ export function Calendar({
   isLoading,
   selectedDate,
   onSelectDay,
+  initialDate,
+  onMonthChange,
+  disableAllDays = false,
 }: CalendarProps) {
   const colorScheme = useThemeScheme();
   const {
@@ -33,17 +40,23 @@ export function Calendar({
     goPrevMonth,
     goNextMonth,
     goToday,
-  } = useCalendarNavigation(days, { selectedDate });
+    viewDate,
+  } = useCalendarNavigation(days, { selectedDate, initialDate });
 
   const handleSelect = (dayIso: ISODateString) => {
     selectDay(dayIso);
     onSelectDay?.(dayIso);
   };
 
+  useEffect(() => {
+    if (!onMonthChange) return;
+    onMonthChange(viewDate.getFullYear(), viewDate.getMonth());
+  }, [onMonthChange, viewDate]);
+
   const panelClass =
     colorScheme === "dark"
-      ? "rounded-lg border border-neutral-800 bg-neutral-950/70 p-4 shadow-sm"
-      : "rounded-lg border border-neutral-200 bg-white p-4 shadow-sm";
+      ? "rounded-xl border border-neutral-800 bg-neutral-950/70 py-4 shadow-sm"
+      : "rounded-xl border border-neutral-200 bg-white p-4 shadow-sm";
 
   return (
     <Panel className={panelClass}>
@@ -58,14 +71,14 @@ export function Calendar({
       <WeekdayRow />
 
       {isLoading ? (
-        <div className="flex h-64 items-center justify-center">
+        <div className="flex h-64 flex-col items-center justify-center gap-2">
+          <Spinner size={20} title="Загрузка..." />
           <Typography.Body
             className={
               colorScheme === "dark" ? "text-neutral-400" : "text-neutral-500"
             }
           >
-            
-        <Spinner size={16} title="Загрузка..."  />
+            Загружаем календарь...
           </Typography.Body>
         </div>
       ) : (
@@ -77,6 +90,7 @@ export function Calendar({
                 day={day}
                 isSelected={selectedDay?.isoDate === day.isoDate}
                 onSelect={handleSelect}
+                forceDisabled={disableAllDays}
               />
             ))
           )}

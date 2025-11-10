@@ -24,9 +24,17 @@ export interface BaseEventFields {
  * поставленных гостями: обе сущности приходят/уходят через один и тот же контракт.
  */
 export interface CalendarEvent extends BaseEventFields {
-  id?: EntityId; // от бэка
-  maxId?: string; // только при отправке: WebAppData.user.id
+  id?: EntityId;
+  maxId?: string;
+  slotId?: EntityId;
+  /**
+   * server field kept for compatibility with backend contract
+   */
+  slot_id?: EntityId;
 }
+
+
+
 
 /**
  * Alias для тех случаев, когда нужно явно подчеркнуть гостевую бронь.
@@ -46,6 +54,9 @@ export interface AvailabilityWindow {
 export interface TimeRange {
   start: ISOTimeString;
   end: ISOTimeString;
+  startISO?: ISODateTimeString;
+  endISO?: ISODateTimeString;
+  slotId?: EntityId;
 }
 
 /**
@@ -55,6 +66,7 @@ export interface CalendarDay {
   date: ISODateString;
   events?: CalendarEvent[]; // все события, включая гостевые слоты
   availability?: TimeRange[]; // свободные окна, которые можно показать гостю
+  isDisabled?: boolean; // внешний календарь без доступных слотов
 }
 
 /**
@@ -63,6 +75,7 @@ export interface CalendarDay {
 export interface CreateEventPayload extends BaseEventFields {
   id?: EntityId;
   maxId?: string;
+  slotId?: EntityId;
 }
 
 /**

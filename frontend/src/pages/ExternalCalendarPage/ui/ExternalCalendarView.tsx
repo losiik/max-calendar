@@ -1,4 +1,5 @@
 import { Button, Typography } from "@maxhub/max-ui";
+import { useState } from "react";
 
 import { Calendar } from "@/widgets/Calendar/ui/Calendar";
 import { useSharedCalendarQuery } from "@/entities/event/model/queries";
@@ -13,20 +14,30 @@ type ExternalCalendarViewProps = {
   hideHeader?: boolean;
   onExit?: () => void;
   exitLabel?: string;
+  ownerName?: string;
 };
 
 export function ExternalCalendarView({
   calendarId,
-  title = "Внешний календарь",
-  subtitle,
   hideHeader = false,
   onExit,
   exitLabel = "Закрыть",
+  ownerName,
 }: ExternalCalendarViewProps) {
-  const { data, isLoading } = useSharedCalendarQuery(calendarId);
+  const [viewDate, setViewDate] = useState(() => new Date());
+  const { data, isLoading } = useSharedCalendarQuery(calendarId, {
+    year: viewDate.getFullYear(),
+    month: viewDate.getMonth(),
+  });
   const openDay = useBookSlotStore((state) => state.openDay);
 
   const days = data ?? [];
+  const hasSlots = days.some(
+    (day) =>
+      (day.availability && day.availability.length > 0) ||
+      (day.events && day.events.length > 0)
+  );
+  const disableMonth = !isLoading && !hasSlots;
 
   const handleSelectDay = (isoDate: ISODateString) => {
     const day =
@@ -34,22 +45,21 @@ export function ExternalCalendarView({
         date: isoDate,
         events: [],
         availability: [],
+        isDisabled: true,
       };
     openDay(day);
   };
 
   return (
-    <div className="flex w-full flex-col gap-4">
+    <div className="flex w-full flex-col gap-4 px-3">
       {!hideHeader && (
         <div className="flex items-center justify-between">
           <div>
-            <Typography.Title variant="large-strong">
-              {title}
-            </Typography.Title>
-            {subtitle && (
-              <Typography.Label className="text-neutral-500">
-                {subtitle}
-              </Typography.Label>
+
+            {ownerName && (
+              <Typography.Title className="text-neutral-500">
+                {ownerName} делится с вами календарем
+              </Typography.Title>
             )}
           </div>
           {onExit && (
@@ -67,8 +77,23 @@ export function ExternalCalendarView({
       <Calendar
         days={days}
         isLoading={isLoading}
+        initialDate={viewDate}
+        disableAllDays={disableMonth}
         onSelectDay={handleSelectDay}
+        onMonthChange={(year, month) =>
+          setViewDate((prev) =>
+            prev.getFullYear() === year && prev.getMonth() === month
+              ? prev
+              : new Date(year, month, 1)
+          )
+        }
       />
+
+      {disableMonth && !isLoading && (
+        <Typography.Label className="text-center text-neutral-500">
+          Нет доступных слотов на этот месяц
+        </Typography.Label>
+      )}
 
       <ExternalBookingForm calendarId={calendarId} />
     </div>

@@ -24,6 +24,7 @@ export const useBookSlotStore = create<BookingState>((set) => ({
       isOpen: true,
       selectedRange: undefined,
     }),
-  close: () => set({ isOpen: false, selectedRange: undefined, selectedDay: undefined }),
+  close: () =>
+    set({ isOpen: false, selectedRange: undefined, selectedDay: undefined }),
   selectRange: (range) => set({ selectedRange: range }),
 }));

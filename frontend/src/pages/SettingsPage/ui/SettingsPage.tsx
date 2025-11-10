@@ -11,9 +11,12 @@ import { useNotificationStore } from "@/features/calendar-settings/notifications
 import NotificationContent from "@/features/calendar-settings/notifications/ui/NotificationContent";
 import AgendaContent from "@/features/calendar-settings/agenda/ui/AgendaContent";
 import { useSettingsQuery } from "@/entities/settings/queries";
-import { toTimeParts } from "@/shared/util/time";
+import { toServerTimeNumber, toTimeParts } from "@/shared/util/time";
 import { createEmptyWorkingDays } from "@/features/calendar-settings/working-days/model/working-days.store";
 import { mapServerDaysToRecord } from "@/features/calendar-settings/lib/working-days.mapper";
+import { useMeetingPeriodsStore } from "@/features/calendar-settings/meeting-periods/model/meeting-periods.store";
+import type { PeriodKey } from "@/features/calendar-settings/meeting-periods/model/meeting-periods.store";
+import { MdAccessTime, MdDateRange, MdNotificationsActive, MdOutlineViewAgenda, MdWorkHistory } from "react-icons/md";
 
 function SettingsPage() {
   const open = useModalStore((s) => s.open);
@@ -33,6 +36,8 @@ function SettingsPage() {
   const agendaTimeMinutes = useAgendaStore((s) => s.minutes);
   const setAgendaHours = useAgendaStore((s) => s.setHours);
   const setAgendaMinutes = useAgendaStore((s) => s.setMinutes);
+  const meetingDuration = useMeetingPeriodsStore((s) => s.selected);
+  const setMeetingDuration = useMeetingPeriodsStore((s) => s.setSelected);
 
   const { data: settings, isLoading, isError } = useSettingsQuery();
 
@@ -47,6 +52,7 @@ function SettingsPage() {
       setAgendaHours("");
       setAgendaMinutes("");
       setLeadTime(0);
+      setMeetingDuration(null);
       return;
     }
     const workingDaysRecord = mapServerDaysToRecord(settings.working_days);
@@ -64,6 +70,13 @@ function SettingsPage() {
     setAgendaMinutes(reminderParts.minutes);
 
     setLeadTime(settings.alert_offset_minutes ?? 0);
+    const duration = settings.duration_minutes ?? null;
+    const allowed: PeriodKey[] = [15, 30, 45, 60, 90];
+    setMeetingDuration(
+      duration && allowed.includes(duration as PeriodKey)
+        ? (duration as PeriodKey)
+        : null
+    );
   }, [
     settings,
     setAgendaHours,
@@ -71,6 +84,7 @@ function SettingsPage() {
     setFromHours,
     setFromMinutes,
     setLeadTime,
+    setMeetingDuration,
     setToHours,
     setToMinutes,
     setWorkingDays,
@@ -80,16 +94,51 @@ function SettingsPage() {
     hours: number | "",
     minutes: number | ""
   ): string => {
-    if (hours === "" && minutes === "") return "";
+    if (hours === "" && minutes === "") return "Не задано";
     const pad = (value: number | "") =>
       value === "" ? "00" : String(value).padStart(2, "0");
     return `${pad(hours)}:${pad(minutes)}`;
   };
 
-  const workingHoursLabel = useMemo(
-    () => fromHours === "" && toHours === "" ? "Выкл" : `С ${formatRange(fromHours, fromMinutes)} по ${formatRange(toHours, toMinutes)}`,
-    [fromHours, fromMinutes, toHours, toMinutes]
+  const workingHoursLabel = useMemo(() => {
+    const fromLabel = formatRange(fromHours, fromMinutes);
+    const toLabel = formatRange(toHours, toMinutes);
+    if (fromLabel === "Не задано" && toLabel === "Не задано") {
+      return "Не задано";
+    }
+    return `С ${fromLabel} по ${toLabel}`;
+  }, [fromHours, fromMinutes, toHours, toMinutes]);
+
+  const agendaLabel = formatRange(agendaTimeHours, agendaTimeMinutes);
+  const meetingDurationLabel = meetingDuration
+    ? `${meetingDuration} мин`
+    : "Не выбрано";
+
+  const workingDayCount = useMemo(
+    () => Object.values(workingDays).filter(Boolean).length,
+    [workingDays]
   );
+
+  const workStartNumber = toServerTimeNumber(fromHours, fromMinutes);
+  const workEndNumber = toServerTimeNumber(toHours, toMinutes);
+
+  const blockedReasons = useMemo(() => {
+    const reasons: string[] = [];
+    const bothSet =
+      workStartNumber !== null && workEndNumber !== null;
+    if (!bothSet || workStartNumber === workEndNumber) {
+      reasons.push("Настройте рабочие часы: время начала и окончания должны отличаться.");
+    }
+    if (!meetingDuration) {
+      reasons.push("Выберите длительность встречи в разделе «Периоды встреч».");
+    }
+    if (workingDayCount === 0) {
+      reasons.push("Укажите хотя бы один рабочий день недели.");
+    }
+    return reasons;
+  }, [workEndNumber, workStartNumber, meetingDuration, workingDayCount]);
+
+  const isSchedulingBlocked = blockedReasons.length > 0;
 
   if (isLoading) {
     return (
@@ -101,7 +150,7 @@ function SettingsPage() {
 
   if (isError) {
     return (
-      <div className="p-4">
+      <div className="p-4 min-h-[calc(100vh-32px)]">
         <Typography.Body variant="small">
           Не удалось загрузить настройки. Попробуйте позже.
         </Typography.Body>
@@ -111,7 +160,18 @@ function SettingsPage() {
 
   return (
     <div className="space-y-6 min-h-[calc(100vh-32px)]">
-   
+      {isSchedulingBlocked && (
+        <div className="mx-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-900">
+          <Typography.Label className="font-semibold">
+            Вы убрали возможность ставить вам встречи:
+          </Typography.Label>
+          <ul className="mt-2 list-disc space-y-1 pl-4 text-xs">
+            {blockedReasons.map((reason) => (
+              <li key={reason}>{reason}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       <CellList
         filled
         mode="island"
@@ -119,36 +179,35 @@ function SettingsPage() {
       >
         <CellSimple
           height="compact"
+          before={<MdWorkHistory size={20} />}
           onClick={() => open({ content: WorkingHoursContent })}
           showChevron
           title="Рабочее время"
-          after={
-            <>{workingHoursLabel}</>
-          }
+          after={workingHoursLabel}
         />
 
         <CellSimple
           height="compact"
+          before={<MdDateRange size={20} />}
+
           onClick={() => open({ content: WorkingDaysContent })}
           showChevron
-          after={
-            <>
-              {
-                Object.entries(workingDays)
-                  .filter(([, v]) => !!v)
-                  .map(([k]) => k).length
-              }{" "}
+        after={
+          <>
+              {workingDayCount}{" "}
               из 7
-            </>
-          }
+          </>
+        }
           title="Рабочие дни"
         />
 
         <CellSimple
+          before={<MdAccessTime size={20} />}
           height="compact"
           onClick={() => open({ content: MeetingPeriodContent })}
           showChevron
           title="Периоды встреч"
+          after={meetingDurationLabel}
         />
       </CellList>
 
@@ -158,29 +217,28 @@ function SettingsPage() {
         header={<CellHeader>Уведомления</CellHeader>}
       >
         <CellSimple
+          before={<MdNotificationsActive size={20} />}
+
           height="compact"
           onClick={() => open({ content: NotificationContent })}
           showChevron
-          title="Уведомлять о событиях"
+          title="Уведомлять за"
           after={
-            (!remindBeforeTime && remindBeforeTime !== 0)
-              ? "Выкл"
-              : `За ${formatTime(remindBeforeTime)}`
+            remindBeforeTime > 0
+              ? `За ${formatTime(remindBeforeTime)}`
+              : "Выкл"
           }
         />
 
         <CellSimple
+          before={<MdOutlineViewAgenda size={20} />}
           height="compact"
           onClick={() => open({ content: AgendaContent })}
           showChevron
           title="Расписание на день"
           subtitle="Ежедневно присылать расписание на день"
           after={
-            (!agendaTimeHours && agendaTimeHours !== 0) ? "Выкл" :
-               `${String(agendaTimeHours).padStart(2, "0")}:${String(
-                  agendaTimeMinutes
-                ).padStart(2, "0")}`
-              
+            agendaLabel === "Не задано" ? "Выкл" : agendaLabel
           }
         />
       </CellList>

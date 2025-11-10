@@ -43,11 +43,11 @@ export const MenuTabs = memo(function MenuTabs() {
         direction="row"
         role="tablist"
         aria-label="Main menu"
-        className="relative mx-auto mt-4 flex w-full max-w-md select-none rounded-lg bg-neutral-100 p-1"
+        className="relative mx-auto mt-4 flex w-full max-w-md select-none rounded-lg bg-white p-1"
       >
         <span
           aria-hidden
-          className="pointer-events-none absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-lg bg-white shadow transition-all duration-200 ease-out"
+          className="pointer-events-none absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] rounded-lg bg-gray-100 shadow transition-all duration-200 ease-out"
           style={{ transform: `translateX(${sliderLeft})` }}
         />
 

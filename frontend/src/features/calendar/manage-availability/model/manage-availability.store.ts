@@ -3,6 +3,7 @@ import { create } from "zustand";
 import type {
   CalendarDay,
   CalendarEvent,
+  EntityId,
 } from "@/entities/event/model/types";
 
 type ManageAvailabilityState = {
@@ -11,6 +12,7 @@ type ManageAvailabilityState = {
   openDay: (day: CalendarDay) => void;
   close: () => void;
   appendEvent: (event: CalendarEvent) => void;
+  removeEvent: (eventId: EntityId) => void;
 };
 
 export const useManageAvailabilityStore = create<ManageAvailabilityState>(
@@ -26,6 +28,21 @@ export const useManageAvailabilityStore = create<ManageAvailabilityState>(
         if (eventDate !== state.selectedDay.date) return state;
         const events = [...(state.selectedDay.events ?? []), event];
         return { selectedDay: { ...state.selectedDay, events } };
+      }),
+    removeEvent: (eventId) =>
+      set((state) => {
+        if (!state.selectedDay?.events?.length) return state;
+        return {
+          selectedDay: {
+            ...state.selectedDay,
+            events: state.selectedDay.events.filter(
+              (event) =>
+                event.id !== eventId &&
+                event.slotId !== eventId &&
+                event.slot_id !== eventId
+            ),
+          },
+        };
       }),
   })
 );

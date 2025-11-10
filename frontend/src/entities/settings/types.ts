@@ -11,6 +11,7 @@ export interface SettingsBase {
   timezone?: number | null;
   work_time_start?: number | null;
   work_time_end?: number | null;
+  duration_minutes?: number | null;
   alert_offset_minutes?: number | null;
   daily_reminder_time?: number | null;
   working_days?: WorkingDayCode[] | null;

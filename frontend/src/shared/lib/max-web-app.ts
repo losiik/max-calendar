@@ -1,8 +1,13 @@
 type WebAppPlatform = "ios" | "android" | "desktop" | "web";
 export type WebAppColorScheme = "light" | "dark";
 
-type HapticImpactStyle = "soft" | "light" | "medium" | "heavy" | "rigid";
-type HapticNotificationType = "error" | "success" | "warning";
+export type HapticImpactStyle =
+  | "soft"
+  | "light"
+  | "medium"
+  | "heavy"
+  | "rigid";
+export type HapticNotificationType = "error" | "success" | "warning";
 
 export type WebAppEventName =
   | "WebAppReady"
@@ -209,7 +214,10 @@ declare global {
   }
 }
 
-export const getWebApp = (): WebAppBridge | undefined => window.WebApp;
+const resolveBridge = (): WebAppBridge | undefined =>
+  typeof window === "undefined" ? undefined : window.WebApp;
+
+export const getWebApp = (): WebAppBridge | undefined => resolveBridge();
 
 export const getWebAppData = (): WebAppData | undefined =>
   getWebApp()?.initDataUnsafe;
@@ -317,3 +325,90 @@ export const requestPhoneNumber = (): void => {
 export const openQrScanner = (fileSelect = true): void => {
   getWebApp()?.openCodeReader(fileSelect);
 };
+
+export const onBackButtonClick = (
+  handler: () => void
+): (() => void) | undefined => {
+  const bridge = getWebApp();
+  if (!bridge) return undefined;
+  bridge.BackButton.onClick(handler);
+  return () => bridge.BackButton.offClick(handler);
+};
+
+export const showBackButton = (): void => {
+  getWebApp()?.BackButton.show();
+};
+
+export const hideBackButton = (): void => {
+  getWebApp()?.BackButton.hide();
+};
+
+export const isScreenCaptureBlocked = (): boolean =>
+  Boolean(getWebApp()?.ScreenCapture.isScreenCaptureEnabled);
+
+export const enableScreenCaptureBlock = (): void => {
+  getWebApp()?.ScreenCapture.enableScreenCapture();
+};
+
+export const disableScreenCaptureBlock = (): void => {
+  getWebApp()?.ScreenCapture.disableScreenCapture();
+};
+
+export const triggerHapticImpact = (
+  style: HapticImpactStyle = "light",
+  disableFallback?: boolean
+): void => {
+  getWebApp()?.HapticFeedback.impactOccurred(style, disableFallback);
+};
+
+export const triggerHapticNotification = (
+  type: HapticNotificationType,
+  disableFallback?: boolean
+): void => {
+  getWebApp()?.HapticFeedback.notificationOccurred(type, disableFallback);
+};
+
+export const triggerHapticSelection = (
+  disableFallback?: boolean
+): void => {
+  getWebApp()?.HapticFeedback.selectionChanged(disableFallback);
+};
+
+const getDeviceStorage = () => getWebApp()?.DeviceStorage;
+const getSecureStorage = () => getWebApp()?.SecureStorage;
+
+export const setDeviceStorageItem = (key: string, value: string) =>
+  getDeviceStorage()?.setItem(key, value);
+
+export const getDeviceStorageItem = (key: string) =>
+  getDeviceStorage()?.getItem(key);
+
+export const removeDeviceStorageItem = (key: string) =>
+  getDeviceStorage()?.removeItem(key);
+
+export const clearDeviceStorage = () => getDeviceStorage()?.clear();
+
+export const setSecureStorageItem = (key: string, value: string) =>
+  getSecureStorage()?.setItem(key, value);
+
+export const getSecureStorageItem = (key: string) =>
+  getSecureStorage()?.getItem(key);
+
+export const removeSecureStorageItem = (key: string) =>
+  getSecureStorage()?.removeItem(key);
+
+export const clearSecureStorage = () => getSecureStorage()?.clear();
+
+const getBiometricManager = () => getWebApp()?.BiometricManager;
+
+export const initBiometricManager = () => getBiometricManager()?.init();
+export const isBiometricAvailable = (): boolean =>
+  Boolean(getBiometricManager()?.isBiometricAvailable);
+export const requestBiometricAccess = () =>
+  getBiometricManager()?.requestAccess();
+export const authenticateBiometric = () =>
+  getBiometricManager()?.authenticate();
+export const updateBiometricToken = (token: string) =>
+  getBiometricManager()?.updateBiometricToken(token);
+export const openBiometricSettings = () =>
+  getBiometricManager()?.openSettings();

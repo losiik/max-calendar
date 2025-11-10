@@ -2,7 +2,7 @@ import { Button, Flex, Input, Textarea, Typography } from "@maxhub/max-ui";
 import { FormEvent, useMemo, useState } from "react";
 
 import type { CreateEventPayload } from "@/entities/event/model/types";
-import { useEventFormStore } from "../model/event-form.store";
+
 
 type EventFormProps = {
   defaultValues?: Partial<CreateEventPayload> & {
@@ -13,6 +13,7 @@ type EventFormProps = {
   isSubmitting?: boolean;
   onSubmit: (payload: CreateEventPayload) => Promise<void> | void;
   onCancel?: () => void;
+  externalError?: string | null;
 };
 
 const toInputValue = (iso?: string) => {
@@ -36,11 +37,9 @@ export function EventForm({
   isSubmitting,
   onSubmit,
   onCancel,
+  externalError,
 }: EventFormProps) {
-  const defaultReminder = useEventFormStore(
-    (state) => state.defaultReminderMinutes
-  );
-
+ 
   const [title, setTitle] = useState(defaultValues?.title ?? "");
   const [description, setDescription] = useState(
     defaultValues?.description ?? ""
@@ -49,10 +48,7 @@ export function EventForm({
     toInputValue(defaultValues?.startsAt)
   );
   const [endsAt, setEndsAt] = useState(toInputValue(defaultValues?.endsAt));
-  const [reminderMinutes, setReminderMinutes] = useState<number | "">(
-    defaultValues?.reminderMinutes ?? defaultReminder
-  );
-
+ 
   const isSubmitDisabled =
     !title || !startsAt || !endsAt || new Date(startsAt) >= new Date(endsAt);
 
@@ -65,8 +61,7 @@ export function EventForm({
       description: description || undefined,
       startsAt: toIsoString(startsAt),
       endsAt: toIsoString(endsAt),
-      reminderMinutes:
-        reminderMinutes === "" ? undefined : Number(reminderMinutes),
+     
     };
 
     await onSubmit(payload);
@@ -124,7 +119,7 @@ export function EventForm({
         </div>
       </div>
 
-      <div className="flex flex-col gap-1">
+      {/* <div className="flex flex-col gap-1">
         <Typography.Label>Напомнить за (мин)</Typography.Label>
         <Input
           type="number"
@@ -137,16 +132,15 @@ export function EventForm({
             )
           }
         />
-      </div>
+      </div> */}
 
-      {errorMessage && (
+      {(errorMessage || externalError) && (
         <Typography.Body variant="small" className="text-red-500">
-          {errorMessage}
+          {errorMessage ?? externalError}
         </Typography.Body>
       )}
 
-      <Flex gap={8} className="pt-1">
-       
+      <Flex gap={8} className="!justify-between pt-1">
         {onCancel && (
           <Button
             mode="secondary"
@@ -157,14 +151,14 @@ export function EventForm({
             Отмена
           </Button>
         )}
-         <Button
+        <Button
           mode="primary"
           appearance="neutral-themed"
           type="submit"
           disabled={isSubmitDisabled || isSubmitting}
         >
           {isSubmitting ? "Сохраняем…" : submitLabel}
-        </Button> 
+        </Button>
       </Flex>
     </form>
   );
