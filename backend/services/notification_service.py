@@ -101,7 +101,8 @@ class NotificationService:
             text=message_invited
         )
 
-        await self._bot.send_message(
-            user_id=notification_data.owner_user_max_id,
-            text=message_owner
-        )
+        if notification_data.owner_user_max_id != notification_data.invite_user_max_id:
+            await self._bot.send_message(
+                user_id=notification_data.owner_user_max_id,
+                text=message_owner
+            )
