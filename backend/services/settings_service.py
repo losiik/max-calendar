@@ -20,7 +20,16 @@ class SettingsService:
 
     @background_session
     async def handle_user_created(self, user_id: UUID):
-        await self.create_settings(user_id)
+        await self.create_settings(
+            user_id=user_id,
+            timezone=0,
+            work_time_start=0.01,
+            work_time_end=23.59,
+            duration_minutes=90,
+            alert_offset_minutes=5,
+            daily_reminder_time=10.0,
+            working_days=['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс']
+        )
 
     @staticmethod
     def days_to_bitmask(days_list) -> int:

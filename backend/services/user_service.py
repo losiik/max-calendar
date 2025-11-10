@@ -39,6 +39,3 @@ class UserService:
 
         await user_register_signal.send_async(user.id)
         return UserModelPydantic.from_orm(user)
-
-    async def time_slot_reminder(self):
-        pass
