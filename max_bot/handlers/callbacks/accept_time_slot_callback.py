@@ -27,7 +27,5 @@ async def accept_time_slot(
         confirm=payload.accept
     )
 
-    if updated_time_slot:
-        await callback.message.answer(text="Встреча запланирована!")
-    else:
+    if not updated_time_slot:
         await callback.message.answer(text="Что-то пошло не так. Попробуйте еще раз")
