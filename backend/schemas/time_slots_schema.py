@@ -48,7 +48,7 @@ class SelfTimeSlotsGetResponse(BaseModel):
 
 
 class ExternalTimeSlotsGetResponse(BaseModel):
-    time_slots: List[SelfTimeSlotsGetResponse]
+    time_slots: List[GetExternalTimeSlot]
 
 
 class TimeSlotsModelPydantic(BaseModel):
