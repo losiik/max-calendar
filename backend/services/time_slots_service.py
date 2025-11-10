@@ -65,3 +65,9 @@ class TimeSlotsService:
         if time_slot:
             return TimeSlotsModelPydantic.from_orm(time_slot)
         return None
+
+    async def get_upcoming(self) -> List[TimeSlotsModelPydantic]:
+        time_slots = await self._time_slots_repository.find_upcoming(
+            current_time=datetime.now()
+        )
+        return time_slots

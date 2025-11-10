@@ -1,5 +1,5 @@
 from typing import Optional, List
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from uuid import UUID
 import math
 from copy import deepcopy
@@ -13,7 +13,11 @@ from backend.exceptions import (
     ShareTokenDoesNotExistsError,
     TimeSlotDoesNotExistsError
 )
-from backend.schemas.notification_schema import Notification, ConfirmTimeSlotNotification
+from backend.schemas.notification_schema import (
+    Notification,
+    ConfirmTimeSlotNotification,
+    MeetAlertNotification
+)
 from backend.schemas.time_slots_schema import (
     SelfTimeSlotsGetResponse,
     GetSelfTimeSlot,
@@ -21,8 +25,11 @@ from backend.schemas.time_slots_schema import (
     GetExternalTimeSlot
 )
 from backend.client.sber_jazz_client import SberJazzClient
-from backend.signals import new_slot_signal
-from backend.signals import confirm_time_slot_signal
+from backend.signals import (
+    new_slot_signal,
+    alert_before_meet_signal,
+    confirm_time_slot_signal
+)
 
 
 class TimeSlotsFacade:
@@ -106,6 +113,10 @@ class TimeSlotsFacade:
         )
 
         return time_slot.id
+
+    def is_working_day(self, target_date: date, working_days_bitmask: int) -> bool:
+        weekday_index = target_date.weekday()
+        return bool(working_days_bitmask & (1 << weekday_index))
 
     def is_overlap(self, start1: float, end1: float, start2: float, end2: float) -> bool:
         return not (end1 <= start2 or start1 >= end2)
@@ -246,16 +257,23 @@ class TimeSlotsFacade:
             owner_token: str,
             target_date: date
     ) -> List[GetExternalTimeSlot]:
-        invited_user = await self._user_service.find_by_max_id(max_id=invited_max_id)
-        if invited_user is None:
-            raise UserDoesNotExistsError
-
         share_data = await self._share_service.get_share_data_by_token(token=owner_token)
 
         if share_data is None:
             raise ShareTokenDoesNotExistsError
 
         owner_user = await self._user_service.get_by_user_id(user_id=share_data.owner_id)
+        owner_settings = await self._settings_service.get_settings(user_id=owner_user.id)
+
+        if not self.is_working_day(
+                target_date=target_date,
+                working_days_bitmask=owner_settings.working_days
+        ):
+            return []
+
+        invited_user = await self._user_service.find_by_max_id(max_id=invited_max_id)
+        if invited_user is None:
+            raise UserDoesNotExistsError
 
         owner_booked_slots = await self._time_slots_service.get_time_self_slots(
             user_id=owner_user.id,
@@ -266,8 +284,6 @@ class TimeSlotsFacade:
             user_id=invited_user.id,
             target_date=target_date
         )
-
-        owner_settings = await self._settings_service.get_settings(user_id=owner_user.id)
 
         all_owner_slots = self.generate_daily_time_slots(
             work_time_start=owner_settings.work_time_start,
@@ -347,3 +363,70 @@ class TimeSlotsFacade:
             raise TimeSlotDoesNotExistsError
 
         await self.update_time_slot(time_slot_id=time_slot_id, confirm=False)
+
+    def is_time_to_alert(self, meet_start_at: datetime, alert_offset_minutes: int) -> bool:
+        now = datetime.now()
+
+        # Приводим meet_start_at к UTC
+        if meet_start_at.tzinfo is None:
+            meet_start_at = meet_start_at.replace()
+        else:
+            meet_start_at = meet_start_at.astimezone()
+
+        now = now.replace(second=0, microsecond=0)
+        meet_start_at = meet_start_at.replace(second=0, microsecond=0)
+
+        alert_time = meet_start_at - timedelta(minutes=alert_offset_minutes)
+        alert_time = alert_time.replace(second=0, microsecond=0)
+        return alert_time == now and now < meet_start_at
+
+    async def check_reminders(self):
+        upcoming_time_slots = await self._time_slots_service.get_upcoming()
+
+        for slot in upcoming_time_slots:
+            owner_settings = await self._settings_service.get_settings(
+                user_id=slot.owner_id
+            )
+            invited_settings = await self._settings_service.get_settings(
+                user_id=slot.invited_id
+            )
+
+            send_notification_to_owner = self.is_time_to_alert(
+                meet_start_at=slot.meet_start_at,
+                alert_offset_minutes=owner_settings.alert_offset_minutes
+            )
+
+            send_notification_to_invited = self.is_time_to_alert(
+                meet_start_at=slot.meet_start_at,
+                alert_offset_minutes=invited_settings.alert_offset_minutes
+            )
+
+            if send_notification_to_owner or send_notification_to_invited:
+                owner_user = await self._user_service.get_by_user_id(user_id=slot.owner_id)
+                invited_user = await self._user_service.get_by_user_id(user_id=slot.invited_id)
+
+                if send_notification_to_owner:
+                    await alert_before_meet_signal.send_async(
+                        MeetAlertNotification(
+                            meet_start_at=slot.meet_start_at,
+                            meet_end_at=slot.meet_end_at,
+                            title=slot.title,
+                            invite_use_name=invited_user.name,
+                            user_max_id=owner_user.max_id,
+                            meeting_url=slot.meeting_url,
+                            alert_offset_minutes=owner_settings.alert_offset_minutes
+                        )
+                    )
+
+                if send_notification_to_invited:
+                    await alert_before_meet_signal.send_async(
+                        MeetAlertNotification(
+                            meet_start_at=slot.meet_start_at,
+                            meet_end_at=slot.meet_end_at,
+                            title=slot.title,
+                            invite_use_name=owner_user.name,
+                            user_max_id=invited_user.max_id,
+                            meeting_url=slot.meeting_url,
+                            alert_offset_minutes=invited_settings.alert_offset_minutes
+                        )
+                    )

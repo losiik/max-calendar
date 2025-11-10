@@ -6,9 +6,16 @@ from maxapi.types import ButtonsPayload, CallbackButton
 from maxapi.filters.callback_payload import CallbackPayload
 
 from backend.settings.settings import Settings
-from backend.schemas.notification_schema import Notification, ConfirmTimeSlotNotification
-from backend.signals import new_slot_signal
-from backend.signals import confirm_time_slot_signal
+from backend.schemas.notification_schema import (
+    Notification,
+    ConfirmTimeSlotNotification,
+    MeetAlertNotification
+)
+from backend.signals import (
+    confirm_time_slot_signal,
+    new_slot_signal,
+    alert_before_meet_signal
+)
 
 
 class CreateTimeSlotPayload(CallbackPayload, prefix='create_time_slot'):
@@ -21,6 +28,10 @@ class NotificationService:
         self._bot = Bot(settings.max_api_key)
         new_slot_signal.connect(self._handle_new_slot)
         confirm_time_slot_signal.connect(self._handle_confirm_time_slot)
+        alert_before_meet_signal.connect(self._handle_alert_meet)
+
+    async def _handle_alert_meet(self, notification_data: MeetAlertNotification):
+        asyncio.create_task(self.send_alert_meet(notification_data=notification_data))
 
     async def _handle_confirm_time_slot(self, notification_data: ConfirmTimeSlotNotification):
         asyncio.create_task(self.send_notification_confirm_slot(notification_data=notification_data))
@@ -106,3 +117,19 @@ class NotificationService:
                 user_id=notification_data.owner_user_max_id,
                 text=message_owner
             )
+
+    def alert_meet_message_builder(self, notification_data: MeetAlertNotification) -> str:
+        return f"""Через {notification_data.alert_offset_minutes} минут у вас стоится встреча с пользователем {notification_data.invite_use_name}
+        
+Название: {notification_data.title}
+Начало в: {notification_data.meet_start_at}
+Конец в:  {notification_data.meet_end_at}
+Ссылка на встречу: {notification_data.meeting_url}
+"""
+
+    async def send_alert_meet(self, notification_data: MeetAlertNotification):
+        message = self.alert_meet_message_builder(notification_data=notification_data)
+        await self._bot.send_message(
+            user_id=notification_data.user_max_id,
+            text=message
+        )

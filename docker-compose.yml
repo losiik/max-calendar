@@ -27,6 +27,18 @@ services:
       - ./max_bot/.env
     restart: always
 
+  cron:
+    build:
+      context: .
+      dockerfile: cron_job/Dockerfile
+    container_name: max-calendar-cron
+    command: sh -c "sleep 15 && python -u cron_job/main.py"
+    environment:
+      - PYTHONPATH=/cron
+    env_file:
+      - ./cron_job/.env
+    restart: always
+
   db:
     image: postgres:16
     container_name: max-calendar-db

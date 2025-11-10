@@ -25,3 +25,13 @@ class ConfirmTimeSlotNotification(BaseModel):
     owner_user_user_name: str
     confirm: bool
     meeting_url: Optional[str] = None
+
+
+class MeetAlertNotification(BaseModel):
+    meet_start_at: datetime
+    meet_end_at: datetime
+    title: str
+    invite_use_name: str
+    user_max_id: int
+    meeting_url: Optional[str] = None
+    alert_offset_minutes: int
