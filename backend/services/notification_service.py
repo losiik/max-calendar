@@ -77,7 +77,11 @@ class NotificationService:
 
     def message_invited_builder_confirm_slot(self, notification_data: ConfirmTimeSlotNotification):
         if notification_data.owner_user_max_id == notification_data.invite_user_max_id:
-            return f"""Вы отменили встречу
+            if notification_data.confirm:
+                confirm_text = "подтвердил"
+            else:
+                confirm_text = "не подтвердил или отменил"
+            return f"""Вы {confirm_text} встречу
 Название: {notification_data.title}    
 Время: с {notification_data.meet_start_at} по {notification_data.meet_end_at}        
 """
