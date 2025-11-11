@@ -19,7 +19,7 @@ async def main():
 /share - поделиться календарем
     :return:
     """
-    await bot.change_info(commands=BotCommand(name="start", description="запустить бот"))
+    await bot.change_info(commands=[BotCommand(name="start", description="запустить бот")])
     register_all_routers(dp)
     await dp.start_polling(bot)
 
