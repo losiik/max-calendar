@@ -1,5 +1,5 @@
 from maxapi import Router
-from maxapi.types import MessageCreated
+from maxapi.types import MessageCreated, Command
 
 from max_bot.services.share_service import ShareService
 from max_bot.dependes import get_share_service
@@ -7,7 +7,7 @@ from max_bot.dependes import get_share_service
 share_router = Router()
 
 
-@share_router.message_created()
+@share_router.message_created(Command('share'))
 async def get_share_link(
         event: MessageCreated,
         share_service: ShareService = get_share_service()

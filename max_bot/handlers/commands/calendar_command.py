@@ -1,12 +1,12 @@
 from maxapi import Router
-from maxapi.types import MessageCreated
+from maxapi.types import MessageCreated, Command
 
 from max_bot.keyboard.calendar_kb import get_calendar_kb
 
 calendar_router = Router()
 
 
-@calendar_router.message_created()
+@calendar_router.message_created(Command('calendar'))
 async def get_calendar_menu(
         event: MessageCreated
 ):
