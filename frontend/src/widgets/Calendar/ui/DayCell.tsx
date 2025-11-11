@@ -19,7 +19,7 @@ const palette = {
     outside: "opacity-0",
     dot: "bg-primary-500",
     availability: "bg-emerald-500",
-    todayRing: "border-primary-100",
+    todayRing: "!border-[#000000] border-[0.5px] border-solid",
   },
   dark: {
     selected: "bg-primary-600/40 border-primary-400 text-white",
@@ -52,7 +52,7 @@ export function DayCell({
     : colors.outside;
   const todayClass =
     day.isToday ? colors.todayRing : "border-transparent";
-  const disabledClass = isDisabled ? "opacity-50 pointer-events-none" : "";
+  const disabledClass = isDisabled ? "50 pointer-events-none" : "";
 
   const handleClick = () => {
     if (isDisabled) return;

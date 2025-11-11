@@ -4,13 +4,19 @@ import { AppRouter } from "../providers/router";
 import { getStartAppPayload } from "@/shared/lib/max-web-app";
 import { useGuestCalendarStore } from "@/features/calendar/guest/model/guest-calendar.store";
 import { GuestCalendarOverlay } from "@/features/calendar/guest/ui/GuestCalendarOverlay";
-import { ensureUserRegistered } from "@/entities/event/api";
+import { ensureUserRegistered, getBrowserTimezoneHours, saveSettings } from "@/entities/event/api";
 
 export default function App() {
   const initGuest = useGuestCalendarStore((state) => state.initFromPayload);
 
   useEffect(() => {
-    ensureUserRegistered();
+   (async function() {
+     const isRegistered = await ensureUserRegistered();
+    if (isRegistered) {
+      console.log("User is registered");  
+      saveSettings({timezone: getBrowserTimezoneHours()})
+    }
+   })();
   }, []);
 
   useEffect(() => {

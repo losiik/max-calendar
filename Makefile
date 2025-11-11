@@ -1,11 +1,22 @@
-.PHONY: down run down-prod run-prod
+.PHONY: up down build restart logs ps down-prod run-prod
+
+up:
+	docker compose up -d
+
+build:
+	docker compose up -d --build
 
 down:
 	docker compose down
 
-run:
-	docker compose up -d --build
+restart:
+	docker compose down && docker compose up -d
 
+logs:
+	docker compose logs -f
+
+ps:
+	docker compose ps
 
 down-prod:
 	sudo docker compose down

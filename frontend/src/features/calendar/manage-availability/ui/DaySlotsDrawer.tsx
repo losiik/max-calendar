@@ -21,6 +21,7 @@ import type {
   CalendarEvent,
   CreateEventPayload,
 } from "@/entities/event/model/types";
+import { Link } from "react-router-dom";
 
 const formatDateLong = (iso: string) =>
   new Intl.DateTimeFormat("ru-RU", {
@@ -144,7 +145,7 @@ export function DaySlotsDrawer() {
                 </Button>
               </div>
 
-              <div className={`mt-3 max-h-48 space-y-2 overflow-y-auto ${events.length === 0 ? "px-3" : ""}`}>
+              <div className={`mt-3 max-h-60 space-y-2 overflow-y-auto ${events.length === 0 ? "px-3" : ""}`}>
                 {events.length === 0 && (
                   <Typography.Label className="text-neutral-500">
                     На этот день событий нет
@@ -159,7 +160,7 @@ export function DaySlotsDrawer() {
                         key={slotId ?? event.startsAt}
                         className="flex-1"
                         title={event.title}
-                        subtitle={`${formatTime(event.startsAt)} — ${formatTime(
+                        subtitle={`${formatTime(event.startsAt)} - ${formatTime(
                           event.endsAt
                         )}`}
                         after={
@@ -184,6 +185,17 @@ export function DaySlotsDrawer() {
                           >
                             {event.description}
                           </Typography.Body>
+                          
+                        )}
+                        {event.meetingUrl && (
+                          <Typography.Label
+                            className="mt-1 block text-blue-600"
+                          >
+                            <Link to={event.meetingUrl} target="_blank" rel="noopener noreferrer" >
+                              {event.meetingUrl}
+                            </Link>
+                          </Typography.Label>
+                          
                         )}
                       </CellSimple>
                     );
