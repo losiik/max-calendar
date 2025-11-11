@@ -238,7 +238,10 @@ class TimeSlotsFacade:
             target_date=target_date
         )
 
-        for slot in booked_slots:
+        unique_slots = {slot.id: slot for slot in booked_slots}.values()
+        unique_slots = list(unique_slots)
+
+        for slot in unique_slots:
             result_slots.append(
                 GetSelfTimeSlot(
                     meet_start_at=self.datetime_to_float(slot.meet_start_at),
