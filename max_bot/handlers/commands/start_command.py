@@ -1,10 +1,9 @@
 from maxapi import Router
 from maxapi.types import BotStarted, Command, MessageCreated
-from maxapi.types import ButtonsPayload, CallbackButton
 
 from max_bot.services.user_service import UserService
 from max_bot.dependes import get_user_service
-from max_bot.keyboard.calendar_kb import get_open_calendar_button
+from max_bot.keyboard.calendar_kb import get_calendar_kb
 
 start_router = Router()
 
@@ -20,12 +19,7 @@ async def bot_started(
         name=f"{event.from_user.first_name} {event.from_user.last_name}"
     )
 
-    buttons = [
-        [get_open_calendar_button()],
-        [CallbackButton(text="Поделиться календарем", payload="share_link")]
-    ]
-
-    payload = ButtonsPayload(buttons=buttons).pack()
+    payload = get_calendar_kb().pack()
 
     await event.bot.send_message(
         chat_id=event.chat_id,
@@ -35,8 +29,8 @@ async def bot_started(
 
 
 @start_router.message_created(Command('start'))
-async def hello(event: MessageCreated):
-    m = await event.message.answer(
+async def command_start(event: MessageCreated):
+    await event.message.answer(
         text=f"""список команд:
 /calendar - мой календарь
 /start - запустить бот
@@ -44,4 +38,3 @@ async def hello(event: MessageCreated):
 /share - поделиться календарем
 """
     )
-    await m.pin()
