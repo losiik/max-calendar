@@ -1,6 +1,7 @@
 from uuid import UUID
 import aiohttp
 from datetime import date
+import logging
 
 from max_bot.settings.settings import Settings
 
@@ -40,5 +41,6 @@ class ServerService:
     async def get_daly_timetable(self, max_id: int, target_date: date) -> tuple[dict, int]:
         async with aiohttp.ClientSession(timeout=self.timeout) as session:
             url = f"{self.base_url_api}api/v1/self/{max_id}/{target_date}"
+            logging.info(url)
             async with session.get(url) as r:
                 return await r.json(), r.status
