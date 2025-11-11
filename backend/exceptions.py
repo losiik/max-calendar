@@ -12,3 +12,7 @@ class ShareTokenDoesNotExistsError(Exception):
 
 class TimeSlotDoesNotExistsError(Exception):
     """ Slot does not exists """
+
+
+class TimeSlotOverlapError(Exception):
+    """ Slot does not exists """

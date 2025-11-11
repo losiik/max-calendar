@@ -1,6 +1,6 @@
 from maxapi import Router
 from maxapi.types import BotStarted, Command, MessageCreated
-from maxapi.types import ButtonsPayload, LinkButton, CallbackButton, MessageCallback
+from maxapi.types import ButtonsPayload, CallbackButton
 
 from max_bot.services.user_service import UserService
 from max_bot.dependes import get_user_service
@@ -37,10 +37,11 @@ async def bot_started(
 @start_router.message_created(Command('start'))
 async def hello(event: MessageCreated):
     m = await event.message.answer(
-        text=f"список команд:"
-             f"/calendar - мой календарь"
-             f"/start - запустить бот"
-             f"/schedule_today - расписание на сегодня"
-             f"/share - поделиться календарем"
+        text=f"""список команд:
+/calendar - мой календарь
+/start - запустить бот
+/schedule_today - расписание на сегодня
+/share - поделиться календарем
+"""
     )
     await m.pin()

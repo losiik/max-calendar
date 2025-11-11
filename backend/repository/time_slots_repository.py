@@ -2,7 +2,7 @@ from uuid import UUID
 from datetime import datetime, date
 from typing import List
 
-from sqlalchemy import func
+from sqlalchemy import func, and_
 from sqlalchemy.future import select
 
 from backend.database import db
@@ -34,7 +34,7 @@ class TimeSlotsRepository(CrudRepository[TimeSlots, UUID]):
 
         return slot_list
 
-    async def find_user_invited_byuser_id_an_date(
+    async def find_user_invited_by_user_id_an_date(
             self,
             user_id: UUID,
             target_date: date
@@ -53,6 +53,64 @@ class TimeSlotsRepository(CrudRepository[TimeSlots, UUID]):
             slot_list.append(
                 TimeSlotsModelPydantic.from_orm(time_slot)
             )
+
+        return slot_list
+
+    async def find_overlapping_slots_for_owner(
+        self,
+        user_id: UUID,
+        meet_start_at_target: datetime,
+        meet_end_at_target: datetime
+    ) -> List[TimeSlotsModelPydantic]:
+        slot_list = []
+
+        stmt = (
+            select(TimeSlots)
+            .where(
+                TimeSlots.owner_id == user_id,
+                TimeSlots.confirm == True,
+                # Проверка пересечения интервалов:
+                and_(
+                    TimeSlots.meet_start_at < meet_end_at_target,
+                    TimeSlots.meet_end_at > meet_start_at_target
+                )
+            )
+        )
+
+        result = await db.session.execute(stmt)
+        overlapping_slots = result.scalars().all()
+
+        for slot in overlapping_slots:
+            slot_list.append(TimeSlotsModelPydantic.from_orm(slot))
+
+        return slot_list
+
+    async def find_overlapping_slots_for_invited(
+            self,
+            user_id: UUID,
+            meet_start_at_target: datetime,
+            meet_end_at_target: datetime
+    ) -> List[TimeSlotsModelPydantic]:
+        slot_list = []
+
+        stmt = (
+            select(TimeSlots)
+            .where(
+                TimeSlots.invited_id == user_id,
+                TimeSlots.confirm == True,
+                # Проверка пересечения интервалов:
+                and_(
+                    TimeSlots.meet_start_at < meet_end_at_target,
+                    TimeSlots.meet_end_at > meet_start_at_target
+                )
+            )
+        )
+
+        result = await db.session.execute(stmt)
+        overlapping_slots = result.scalars().all()
+
+        for slot in overlapping_slots:
+            slot_list.append(TimeSlotsModelPydantic.from_orm(slot))
 
         return slot_list
 
