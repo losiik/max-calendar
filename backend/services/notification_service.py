@@ -1,5 +1,6 @@
 import asyncio
 from uuid import UUID
+from datetime import datetime, timezone, timedelta
 
 from maxapi import Bot
 from maxapi.types import ButtonsPayload, CallbackButton
@@ -30,6 +31,11 @@ class NotificationService:
         confirm_time_slot_signal.connect(self._handle_confirm_time_slot)
         alert_before_meet_signal.connect(self._handle_alert_meet)
 
+    def from_utc_naive(self, dt_utc: datetime, tz_offset_hours: int) -> datetime:
+        dt_utc = dt_utc.replace(tzinfo=timezone.utc)
+        local_time = dt_utc.astimezone(timezone(timedelta(hours=tz_offset_hours)))
+        return local_time.replace(tzinfo=None)
+
     async def _handle_alert_meet(self, notification_data: MeetAlertNotification):
         asyncio.create_task(self.send_alert_meet(notification_data=notification_data))
 
@@ -40,9 +46,19 @@ class NotificationService:
         asyncio.create_task(self.send_notification_new_slot(notification_data=notification_data))
 
     def message_builder_new_slot(self, notification_data: Notification):
+        meet_start_at = self.from_utc_naive(
+            dt_utc=notification_data.meet_start_at,
+            tz_offset_hours=notification_data.owner_time_zone
+        )
+
+        meet_end_at = self.from_utc_naive(
+            dt_utc=notification_data.meet_end_at,
+            tz_offset_hours=notification_data.owner_time_zone
+        )
+
         return f"""Пользователь {notification_data.invite_user_name} хочет запланировать с вами встречу
 Название: {notification_data.title}
-Время: с {notification_data.meet_start_at} по {notification_data.meet_end_at}
+Время: с {meet_start_at} по {meet_end_at}
         """
 
     async def send_notification_new_slot(self, notification_data: Notification):
@@ -75,7 +91,19 @@ class NotificationService:
             attachments=[payload]
         )
 
-    def message_invited_builder_confirm_slot(self, notification_data: ConfirmTimeSlotNotification):
+    def message_invited_builder_confirm_slot(
+            self,
+            notification_data: ConfirmTimeSlotNotification
+    ):
+        invited_meet_start_at = self.from_utc_naive(
+            dt_utc=notification_data.meet_start_at,
+            tz_offset_hours=notification_data.invite_timezone
+        )
+
+        invited_meet_end_at = self.from_utc_naive(
+            dt_utc=notification_data.meet_end_at,
+            tz_offset_hours=notification_data.invite_timezone
+        )
         if notification_data.owner_user_max_id == notification_data.invite_user_max_id:
             if notification_data.confirm:
                 confirm_text = "подтвердил"
@@ -83,19 +111,30 @@ class NotificationService:
                 confirm_text = "не подтвердил или отменил"
             return f"""Вы {confirm_text} встречу
 Название: {notification_data.title}    
-Время: с {notification_data.meet_start_at} по {notification_data.meet_end_at}        
+Время: с {invited_meet_start_at} по {invited_meet_end_at}        
 """
         if notification_data.confirm:
             confirm_text = "подтвердил"
         else:
             confirm_text = "не подтвердил или отменил"
+
         return f"""Пользователь {notification_data.owner_user_user_name} {confirm_text} с вами встречу
 Название: {notification_data.title}
-Время: с {notification_data.meet_start_at} по {notification_data.meet_end_at}
+Время: с {invited_meet_start_at} по {invited_meet_end_at}
 Ссылка на встречу: {notification_data.meeting_url}
         """
 
     def message_owner_builder_confirm_slot(self, notification_data: ConfirmTimeSlotNotification):
+        owner_meet_start_at = self.from_utc_naive(
+            dt_utc=notification_data.meet_start_at,
+            tz_offset_hours=notification_data.owner_timezone
+        )
+
+        owner_meet_end_at = self.from_utc_naive(
+            dt_utc=notification_data.meet_end_at,
+            tz_offset_hours=notification_data.owner_timezone
+        )
+
         if notification_data.confirm:
             confirm_text = "подтвердили"
         else:
@@ -103,13 +142,17 @@ class NotificationService:
 
         return f"""Вы успешно {confirm_text} встречу с {notification_data.invite_use_name}
 Название: {notification_data.title}
-Время: с {notification_data.meet_start_at} по {notification_data.meet_end_at}
+Время: с {owner_meet_start_at} по {owner_meet_end_at}
 Ссылка на встречу: {notification_data.meeting_url}
 """
 
     async def send_notification_confirm_slot(self, notification_data: ConfirmTimeSlotNotification):
-        message_invited = self.message_invited_builder_confirm_slot(notification_data=notification_data)
-        message_owner = self.message_owner_builder_confirm_slot(notification_data=notification_data)
+        message_invited = self.message_invited_builder_confirm_slot(
+            notification_data=notification_data
+        )
+        message_owner = self.message_owner_builder_confirm_slot(
+            notification_data=notification_data
+        )
 
         await self._bot.send_message(
             user_id=notification_data.invite_user_max_id,
@@ -123,11 +166,20 @@ class NotificationService:
             )
 
     def alert_meet_message_builder(self, notification_data: MeetAlertNotification) -> str:
+        meet_start_at = self.from_utc_naive(
+            dt_utc=notification_data.meet_start_at,
+            tz_offset_hours=notification_data.user_timezone
+        )
+
+        meet_end_at = self.from_utc_naive(
+            dt_utc=notification_data.meet_end_at,
+            tz_offset_hours=notification_data.user_timezone
+        )
         return f"""Через {notification_data.alert_offset_minutes} минут у вас стоится встреча с пользователем {notification_data.invite_use_name}
         
 Название: {notification_data.title}
-Начало в: {notification_data.meet_start_at}
-Конец в:  {notification_data.meet_end_at}
+Начало в: {meet_start_at}
+Конец в:  {meet_end_at}
 Ссылка на встречу: {notification_data.meeting_url}
 """
 

@@ -1,5 +1,5 @@
 from uuid import UUID
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from typing import Optional, List, Any
 
 from backend.repository.time_slots_repository import TimeSlotsRepository
@@ -72,7 +72,7 @@ class TimeSlotsService:
 
     async def get_upcoming(self) -> List[TimeSlotsModelPydantic]:
         time_slots = await self._time_slots_repository.find_upcoming(
-            current_time=datetime.now()
+            current_time=datetime.now(timezone.utc).replace(tzinfo=None)
         )
         return time_slots
 
