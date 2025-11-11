@@ -11,7 +11,8 @@ from backend.services.settings_service import SettingsService
 from backend.exceptions import (
     UserDoesNotExistsError,
     ShareTokenDoesNotExistsError,
-    TimeSlotDoesNotExistsError
+    TimeSlotDoesNotExistsError,
+    TimeSlotOverlapError
 )
 from backend.schemas.notification_schema import (
     Notification,
@@ -101,6 +102,15 @@ class TimeSlotsFacade:
         user = await self._user_service.find_by_max_id(max_id=max_id)
         if user is None:
             raise UserDoesNotExistsError
+
+        overlap_slots = await self._time_slots_service.get_user_overlapping_slot(
+            user_id=user.id,
+            meet_start_at_target=meet_start_at,
+            meet_end_at_target=meet_end_at
+        )
+
+        if overlap_slots != []:
+            raise TimeSlotOverlapError
 
         time_slot = await self._time_slots_service.create_time_slot(
             owner_id=user.id,

@@ -56,7 +56,7 @@ class TimeSlotsService:
         time_slots_where_owner = await self._time_slots_repository.find_by_user_id_an_date(
             user_id=user_id, target_date=target_date
         )
-        time_slots_where_invited = await self._time_slots_repository.find_user_invited_byuser_id_an_date(
+        time_slots_where_invited = await self._time_slots_repository.find_user_invited_by_user_id_an_date(
             user_id=user_id, target_date=target_date
         )
         return time_slots_where_owner + time_slots_where_invited
@@ -75,3 +75,21 @@ class TimeSlotsService:
             current_time=datetime.now()
         )
         return time_slots
+
+    async def get_user_overlapping_slot(
+            self,
+            user_id: UUID,
+            meet_start_at_target: datetime,
+            meet_end_at_target: datetime
+    ) -> List[TimeSlotsModelPydantic]:
+        owner_overlap_slots = await self._time_slots_repository.find_overlapping_slots_for_owner(
+            user_id=user_id,
+            meet_start_at_target=meet_start_at_target,
+            meet_end_at_target=meet_end_at_target
+        )
+        invited_overlap_slots = await self._time_slots_repository.find_overlapping_slots_for_invited(
+            user_id=user_id,
+            meet_start_at_target=meet_start_at_target,
+            meet_end_at_target=meet_end_at_target
+        )
+        return owner_overlap_slots + invited_overlap_slots

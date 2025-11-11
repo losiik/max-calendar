@@ -15,7 +15,11 @@ from backend.schemas.time_slots_schema import (
     TimeSlotsModelPydantic
 )
 from backend.facade.time_slots_facade import TimeSlotsFacade
-from backend.exceptions import UserDoesNotExistsError, ShareTokenDoesNotExistsError
+from backend.exceptions import (
+    UserDoesNotExistsError,
+    ShareTokenDoesNotExistsError,
+    TimeSlotOverlapError
+)
 
 
 time_slots_router = APIRouter(prefix='/time_slots')
@@ -59,6 +63,8 @@ async def book_self_time_slot(
         return TimeSlotsCreateResponse(id=slot)
     except UserDoesNotExistsError:
         raise HTTPException(status_code=409, detail="User does not exists")
+    except TimeSlotOverlapError:
+        raise HTTPException(status_code=409, detail="Time slot overlap")
 
 
 @time_slots_router.get('/self/{max_id}/{target_date}', response_model=SelfTimeSlotsGetResponse)
