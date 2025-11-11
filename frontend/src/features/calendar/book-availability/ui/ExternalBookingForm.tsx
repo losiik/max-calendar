@@ -116,7 +116,7 @@ export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
                         key={`${range.start}-${range.end}`}
                         before={isActive ? <MdCheck /> : null}
                         onClick={() => selectRange(range)}
-                        title={`${range.start} — ${range.end}`}
+                        title={`${range.start} - ${range.end}`}
                         aria-pressed={isActive}
                         subtitle={"Свободно"}
                       ></CellSimple>

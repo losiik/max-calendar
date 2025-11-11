@@ -1,27 +1,43 @@
-# React + TypeScript + Vite
+# Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Назначение
 
-Currently, two official plugins are available:
+SPA на React и TypeScript для MAX WebApp. В приложении юзер видит личные слоты, настройки рабочего времени, а также гостевой календарь, который открывается по `startapp` параметру из бота.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Технологии и архитектура
 
-## Expanding the ESLint configuration
+Vite отвечает за сборку. Tailwind и Max UI покрывают стили. TanStack Query инкапсулирует запросы к REST API, Zustand хранит состояние фич (дни, гостевой режим, модалки). Код следует feature sliced подходу. `entities` описывают доменные модели, `features` содержат сценарии (управление доступностью, бронирование, настройки), `widgets` представляют сложные компоненты, `pages` собирают экран, `providers` включают роутер и React Query, `shared` содержит утилиты, дизайн токены и интеграцию с Telegram MAX WebApp.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### package.json
+Основные зависимости перечислены в `package.json` с закрепленными версиями:
+- `react`, `react-dom`, `react-router-dom` — ядро UI и роутинг.
+- `@maxhub/max-ui`, `tailwindcss`, `postcss`, `autoprefixer` — компоненты и стили.
+- `@tanstack/react-query`, `axios`, `zustand` — сетевые запросы и состояние.
+- `typescript`, `vite`, `@vitejs/plugin-react` — сборка и типизация.
+- `eslint`, `@typescript-eslint/*` — проверка качества кода.
+Скрипты `dev`, `build`, `preview`, `deploy`, `lint` описаны в разделе `scripts`, что позволяет воспроизводимо собирать и деплоить фронтенд.
 
-- Configure the top-level `parserOptions` property like this:
+## Переменные окружения
+VITE_API_BASE_URL - базовый адрес бекенда (например `https://max.expalingpt.ru/api/v1`).  
+VITE_MAX_USER_ID - необязательная переменная, чтобы подменять пользователя при запуске вне Telegram.
+VITE_USE_MOCKS - необязательная переменная, чтобы использовать моки вместо реальных запросов (если true - используется VITE_MAX_USER_ID).
 
-```js
-   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-   },
-```
+## Локальный запуск
+1. Перейти в папку `frontend` и установить зависимости `npm i`.
+2. Создать `.env.development` с переменными из раздела выше.
+3. Выполнить `npm run dev` и проксировать порт (по умолчанию 5173) в окружение Telegram WebApp или открыть в браузере с тестовой переменной `VITE_MAX_USER_ID`.
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+ВАЖНО! URL-параметры никак не обрабатываются. В MAXе одновременно с появлением в объекте `window.WebApp` к ссылке на сайт добавляются URL-параметры, но в проекте не предусмотрена их обработка. Только через глобальный объект `window`.
+
+## Сборка и деплой
+`npm run build` собирает статику в `dist`. Статический контент можно отдавать с любого CDN или GitHub Pages. Для GitHub Pages предусмотрен скрипт `npm run deploy`, который копирует `index.html` в `404.html`, пушит содержимое `dist` в специальный отдельный репозиторий и ветку `gh-pages`. При продакшн-деплое нужно в хостинге настроить переменную `VITE_API_BASE_URL`, чтобы фронт ходил к продовому бекенду. Результат доступен по адресу домена, указанного в настройках Pages ([https://aeroserg.github.io/max-calendar](https://aeroserg.github.io/max-calendar)).
+
+## API и интеграции
+
+Регистрация пользователя вызывается при монтировании приложения (`ensureUserRegistered`). Гостевые календари открываются автоматически, если Telegram передал `start_param` в глобальном объекте. Любая клиентская операция (создать слот, удалить, сохранить настройки) обращается к REST ручкам `/api/v1/*`, которые описаны в backend README.
+
+## Структура исходников
+`src/app` содержит точку входа и глобальные стили. `src/providers` включает Router и QueryClient. `src/entities` инкапсулируют типы календаря и API функцию `entities/event/api`. `src/features` отвечают за прикладную бизнес-логику и сторы Zustand. `src/widgets` - готовые компоненты, например календарь. `src/pages` собирают layout, `src/shared` хранит модалки, утилиты времени, интеграцию с Telegram.
+
+## Проверка качества
+`npm run lint` запускает линтер.

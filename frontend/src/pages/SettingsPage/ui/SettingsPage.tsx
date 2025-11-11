@@ -17,6 +17,7 @@ import { mapServerDaysToRecord } from "@/features/calendar-settings/lib/working-
 import { useMeetingPeriodsStore } from "@/features/calendar-settings/meeting-periods/model/meeting-periods.store";
 import type { PeriodKey } from "@/features/calendar-settings/meeting-periods/model/meeting-periods.store";
 import { MdAccessTime, MdDateRange, MdNotificationsActive, MdOutlineViewAgenda, MdWorkHistory } from "react-icons/md";
+import { getBrowserTimezoneHours, getBrowserTimezoneLocation } from "@/entities/event/api";
 
 function SettingsPage() {
   const open = useModalStore((s) => s.open);
@@ -172,11 +173,28 @@ function SettingsPage() {
           </ul>
         </div>
       )}
+  <CellList
+        filled
+        mode="island"
+        header={<CellHeader>Часовой пояс</CellHeader>}
+      >
+       <CellSimple
+          height="compact"
+          title="Ваш часовой пояс"
+          after={`${getBrowserTimezoneLocation()} ${getBrowserTimezoneHours()} UTC`}
+        />
+        </CellList>
+
+
       <CellList
         filled
         mode="island"
         header={<CellHeader>Свободное время</CellHeader>}
       >
+        
+
+
+
         <CellSimple
           height="compact"
           before={<MdWorkHistory size={20} />}
@@ -223,6 +241,7 @@ function SettingsPage() {
           onClick={() => open({ content: NotificationContent })}
           showChevron
           title="Уведомлять за"
+          subtitle="Напомнить о событии"
           after={
             remindBeforeTime > 0
               ? `За ${formatTime(remindBeforeTime)}`

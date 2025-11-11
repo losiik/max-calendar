@@ -18,7 +18,9 @@ const buildEvent = (
   startHours: number,
   startMinutes: number,
   durationMinutes: number,
-  title: string
+  title: string,
+  meetingUrl: string,
+
 ): CalendarEvent => {
   const id = uid();
   const start = new Date(date);
@@ -30,9 +32,10 @@ const buildEvent = (
     id,
     slotId: id,
     title,
-    description: "",
+    description: "Очень длинное поисание писать стоят  мальчик Италия жетско конь трава корова скачки кнут девочка",
     startsAt: start.toISOString(),
     endsAt: end.toISOString(),
+    meetingUrl,
   };
 };
 
@@ -42,15 +45,15 @@ tomorrow.setDate(today.getDate() + 1);
 const twoDaysLater = new Date(today);
 twoDaysLater.setDate(today.getDate() + 2);
 
-const todayEvent = buildEvent(today, 10, 0, 60, "Стэндап команды");
+const todayEvent = buildEvent(today, 10, 0, 60, "Стэндап команды", "https://web.max.ru/74771308");
 const todayGuestEvent = buildEvent(
   today,
   15,
   30,
   30,
   "Встреча с заказчиком"
-);
-const tomorrowEvent = buildEvent(tomorrow, 9, 0, 45, "Интервью кандидата");
+, "https://web.max.ru/74771308");
+const tomorrowEvent = buildEvent(tomorrow, 9, 0, 45, "Интервью кандидата", "https://web.max.ru/74771308");
 
 export const mockPersonalDays: CalendarDay[] = [
   {
