@@ -8,7 +8,7 @@ from max_bot.dependes import get_time_slot_service
 schedule_router = Router()
 
 
-@schedule_router.bot_started()
+@schedule_router.message_created()
 async def today_timetable(
         event: MessageCreated,
         time_slot_service: TimeSlotService = get_time_slot_service()

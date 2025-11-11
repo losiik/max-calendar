@@ -6,7 +6,7 @@ from max_bot.keyboard.calendar_kb import get_calendar_kb
 calendar_router = Router()
 
 
-@calendar_router.bot_started()
+@calendar_router.message_created()
 async def get_calendar_menu(
         event: MessageCreated
 ):

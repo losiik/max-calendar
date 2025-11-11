@@ -7,7 +7,7 @@ from max_bot.dependes import get_share_service
 share_router = Router()
 
 
-@share_router.bot_started()
+@share_router.message_created()
 async def get_share_link(
         event: MessageCreated,
         share_service: ShareService = get_share_service()
