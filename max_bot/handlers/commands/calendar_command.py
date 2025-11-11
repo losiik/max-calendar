@@ -12,8 +12,7 @@ async def get_calendar_menu(
 ):
     payload = get_calendar_kb().pack()
 
-    await event.bot.send_message(
-        chat_id=event.chat_id,
+    await event.message.answer(
         text=f"В этом календаре вы можете планировать собственные задачи и встречи с другими пользователями",
         attachments=[payload]
     )

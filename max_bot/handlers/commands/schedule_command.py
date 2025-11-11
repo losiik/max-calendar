@@ -14,7 +14,7 @@ async def today_timetable(
         time_slot_service: TimeSlotService = get_time_slot_service()
 ):
     message = await time_slot_service.get_daly_timetable(
-        max_id=event.message.from_user.user_id,
+        max_id=event.sender.user_id,
         target_date=datetime.now().date()
     )
 

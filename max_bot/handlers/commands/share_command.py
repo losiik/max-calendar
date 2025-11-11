@@ -12,6 +12,6 @@ async def get_share_link(
         event: MessageCreated,
         share_service: ShareService = get_share_service()
 ):
-    link = await share_service.get_share_link(max_id=event.message.from_user.user_id)
+    link = await share_service.get_share_link(max_id=event.sender.user_id)
 
     await event.message.answer(text=link)
