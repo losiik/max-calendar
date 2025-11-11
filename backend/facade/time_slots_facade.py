@@ -1,5 +1,5 @@
 from typing import Optional, List
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, timezone
 from uuid import UUID
 import math
 from copy import deepcopy
@@ -48,6 +48,17 @@ class TimeSlotsFacade:
         self._settings_service = settings_service
         self._sber_jazz_client = sber_jazz_client
 
+    def to_utc_naive(self, dt: datetime, tz_offset_hours: int) -> datetime:
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone(timedelta(hours=tz_offset_hours)))
+
+        return dt.astimezone(timezone.utc).replace(tzinfo=None)
+
+    def from_utc_naive(self, dt_utc: datetime, tz_offset_hours: int) -> datetime:
+        dt_utc = dt_utc.replace(tzinfo=timezone.utc)
+        local_time = dt_utc.astimezone(timezone(timedelta(hours=tz_offset_hours)))
+        return local_time.replace(tzinfo=None)
+
     async def create_time_slot(
             self,
             owner_token: str,
@@ -67,12 +78,16 @@ class TimeSlotsFacade:
             raise ShareTokenDoesNotExistsError
 
         owner_user = await self._user_service.get_by_user_id(user_id=share_data.owner_id)
+        owner_settings = await self._settings_service.get_settings(user_id=owner_user.id)
+
+        utc_meet_start_at = self.to_utc_naive(dt=meet_start_at, tz_offset_hours=owner_settings.timezone)
+        aware_meet_end_at = self.to_utc_naive(dt=meet_end_at, tz_offset_hours=owner_settings.timezone)
 
         time_slot = await self._time_slots_service.create_time_slot(
             owner_id=owner_user.id,
             invited_id=invited_user.id,
-            meet_start_at=meet_start_at,
-            meet_end_at=meet_end_at,
+            meet_start_at=utc_meet_start_at,
+            meet_end_at=aware_meet_end_at,
             confirm=False,
             title=title,
             description=description
@@ -86,7 +101,8 @@ class TimeSlotsFacade:
                 meet_end_at=meet_end_at,
                 title=title,
                 description=description,
-                time_slot_id=time_slot.id
+                time_slot_id=time_slot.id,
+                owner_time_zone=owner_settings.timezone
             )
         )
         return time_slot.id
@@ -103,10 +119,15 @@ class TimeSlotsFacade:
         if user is None:
             raise UserDoesNotExistsError
 
+        owner_settings = await self._settings_service.get_settings(user_id=user.id)
+
+        utc_meet_start_at = self.to_utc_naive(dt=meet_start_at, tz_offset_hours=owner_settings.timezone)
+        aware_meet_end_at = self.to_utc_naive(dt=meet_end_at, tz_offset_hours=owner_settings.timezone)
+
         overlap_slots = await self._time_slots_service.get_user_overlapping_slot(
             user_id=user.id,
-            meet_start_at_target=meet_start_at,
-            meet_end_at_target=meet_end_at
+            meet_start_at_target=utc_meet_start_at,
+            meet_end_at_target=aware_meet_end_at
         )
 
         if overlap_slots != []:
@@ -115,8 +136,8 @@ class TimeSlotsFacade:
         time_slot = await self._time_slots_service.create_time_slot(
             owner_id=user.id,
             invited_id=user.id,
-            meet_start_at=meet_start_at,
-            meet_end_at=meet_end_at,
+            meet_start_at=utc_meet_start_at,
+            meet_end_at=aware_meet_end_at,
             confirm=True,
             title=title,
             description=description
@@ -243,6 +264,8 @@ class TimeSlotsFacade:
         if user is None:
             raise UserDoesNotExistsError
 
+        user_settings = await self._settings_service.get_settings(user_id=user.id)
+
         booked_slots = await self._time_slots_service.get_time_self_slots(
             user_id=user.id,
             target_date=target_date
@@ -252,10 +275,20 @@ class TimeSlotsFacade:
         unique_slots = list(unique_slots)
 
         for slot in unique_slots:
+            meet_start_at = self.from_utc_naive(
+                dt_utc=slot.meet_start_at,
+                tz_offset_hours=user_settings.timezone
+            )
+
+            meet_end_at = self.from_utc_naive(
+                dt_utc=slot.meet_end_at,
+                tz_offset_hours=user_settings.timezone
+            )
+
             result_slots.append(
                 GetSelfTimeSlot(
-                    meet_start_at=self.datetime_to_float(slot.meet_start_at),
-                    meet_end_at=self.datetime_to_float(slot.meet_end_at),
+                    meet_start_at=self.datetime_to_float(meet_start_at),
+                    meet_end_at=self.datetime_to_float(meet_end_at),
                     title=slot.title,
                     description=slot.description,
                     slot_id=slot.id
@@ -288,6 +321,8 @@ class TimeSlotsFacade:
         if invited_user is None:
             raise UserDoesNotExistsError
 
+        invited_settings = await self._settings_service.get_settings(user_id=invited_user.id)
+
         owner_booked_slots = await self._time_slots_service.get_time_self_slots(
             user_id=owner_user.id,
             target_date=target_date
@@ -309,6 +344,11 @@ class TimeSlotsFacade:
             owner_booked_slots=owner_booked_slots,
             invited_booked_slots=invited_booked_slots
         )
+
+        for slot in available_external_slots:
+            slot.meet_end_at += invited_settings.timezone
+            slot.meet_end_at += invited_settings.timezone
+
         return available_external_slots
 
     async def update_time_slot(
@@ -348,6 +388,9 @@ class TimeSlotsFacade:
         invited_user = await self._user_service.get_by_user_id(user_id=updated_time_slot.invited_id)
         owner_user = await self._user_service.get_by_user_id(user_id=updated_time_slot.owner_id)
 
+        invited_user_settings = await self._settings_service.get_settings(user_id=invited_user.id)
+        owner_user_settings = await self._settings_service.get_settings(user_id=owner_user.id)
+
         if confirm is not None:
             await confirm_time_slot_signal.send_async(
                 ConfirmTimeSlotNotification(
@@ -356,8 +399,10 @@ class TimeSlotsFacade:
                     title=updated_time_slot.title,
                     invite_user_max_id=invited_user.max_id,
                     invite_use_name=invited_user.name,
+                    invite_timezone=invited_user_settings.timezone,
                     owner_user_max_id=owner_user.max_id,
                     owner_user_user_name=owner_user.name,
+                    owner_timezone=owner_user_settings.timezone,
                     confirm=confirm,
                     meeting_url=meeting_url
                 )
@@ -426,6 +471,7 @@ class TimeSlotsFacade:
                             title=slot.title,
                             invite_use_name=invited_user.name,
                             user_max_id=owner_user.max_id,
+                            user_timezone=owner_settings.timezone,
                             meeting_url=slot.meeting_url,
                             alert_offset_minutes=owner_settings.alert_offset_minutes
                         )
@@ -439,6 +485,7 @@ class TimeSlotsFacade:
                             title=slot.title,
                             invite_use_name=owner_user.name,
                             user_max_id=invited_user.max_id,
+                            user_timezone=invited_settings.timezone,
                             meeting_url=slot.meeting_url,
                             alert_offset_minutes=invited_settings.alert_offset_minutes
                         )

@@ -68,7 +68,7 @@ async def book_self_time_slot(
 
 
 @time_slots_router.get('/self/{max_id}/{target_date}', response_model=SelfTimeSlotsGetResponse)
-async def get_my_time_slots(
+async def get_self_time_slots(
         max_id: int,
         target_date: date,
         time_slots_facade: TimeSlotsFacade = Depends(get_time_slots_facade)

@@ -9,6 +9,7 @@ class Notification(BaseModel):
     time_slot_id: UUID
     invite_user_name: str
     owner_user_max_id: int
+    owner_time_zone: int
     meet_start_at: datetime
     meet_end_at: datetime
     title: str
@@ -21,8 +22,10 @@ class ConfirmTimeSlotNotification(BaseModel):
     title: str
     invite_user_max_id: int
     invite_use_name: str
+    invite_timezone: int
     owner_user_max_id: int
     owner_user_user_name: str
+    owner_timezone: int
     confirm: bool
     meeting_url: Optional[str] = None
 
@@ -33,5 +36,6 @@ class MeetAlertNotification(BaseModel):
     title: str
     invite_use_name: str
     user_max_id: int
+    user_timezone: int
     meeting_url: Optional[str] = None
     alert_offset_minutes: int
