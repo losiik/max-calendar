@@ -9,5 +9,5 @@ from max_bot.handlers.commands.schedule_command import schedule_router
 def register_commands_router(dp: Dispatcher):
     dp.include_routers(start_router)
     dp.include_routers(calendar_router)
-    dp.include_routers(calendar_router)
+    dp.include_routers(share_router)
     dp.include_routers(schedule_router)
