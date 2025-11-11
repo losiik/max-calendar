@@ -12,14 +12,14 @@ from maxapi.types import BotCommand
 
 
 async def main():
-    """
-    /calendar - мой календарь
-/start - запустить бот
-/schedule_today - расписание на сегодня
-/share - поделиться календарем
-    :return:
-    """
-    await bot.change_info(commands=[BotCommand(name="start", description="запустить бот")])
+    await bot.change_info(
+        commands=[
+            BotCommand(name="start", description="запустить бот"),
+            BotCommand(name="calendar", description="мой календарь"),
+            BotCommand(name="schedule_today", description="расписание на сегодня"),
+            BotCommand(name="share", description="поделиться календарем")
+        ]
+    )
     register_all_routers(dp)
     await dp.start_polling(bot)
 
