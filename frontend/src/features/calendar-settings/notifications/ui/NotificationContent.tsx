@@ -34,7 +34,7 @@ export default function NotificationContent() {
 
   const handleSave = () => {
     setLeadTime(value);
-    close();
+    close();  
   };
 
   const handleReset = () => {
