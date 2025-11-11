@@ -52,6 +52,7 @@ class TimeSlotService:
             target_date=target_date
         )
         if response[1] != 200:
+            logging.error(response[1])
             return "Что-то пошло не так"
 
         message = self.__construct_daly_timetable_message(data=response[0])
