@@ -10,12 +10,14 @@ from backend.settings.settings import Settings
 from backend.schemas.notification_schema import (
     Notification,
     ConfirmTimeSlotNotification,
-    MeetAlertNotification
+    MeetAlertNotification,
+    SelfBookingNotification
 )
 from backend.signals import (
     confirm_time_slot_signal,
     new_slot_signal,
-    alert_before_meet_signal
+    alert_before_meet_signal,
+    self_booking_signal
 )
 
 
@@ -30,11 +32,15 @@ class NotificationService:
         new_slot_signal.connect(self._handle_new_slot)
         confirm_time_slot_signal.connect(self._handle_confirm_time_slot)
         alert_before_meet_signal.connect(self._handle_alert_meet)
+        self_booking_signal.connect(self._handel_self_booking)
 
     def from_utc_naive(self, dt_utc: datetime, tz_offset_hours: int) -> datetime:
         dt_utc = dt_utc.replace(tzinfo=timezone.utc)
         local_time = dt_utc.astimezone(timezone(timedelta(hours=tz_offset_hours)))
         return local_time.replace(tzinfo=None)
+
+    async def _handel_self_booking(self, notification_data: SelfBookingNotification):
+        asyncio.create_task(self.self_booking_notification(notification_data=notification_data))
 
     async def _handle_alert_meet(self, notification_data: MeetAlertNotification):
         asyncio.create_task(self.send_alert_meet(notification_data=notification_data))
@@ -191,6 +197,30 @@ class NotificationService:
 
     async def send_alert_meet(self, notification_data: MeetAlertNotification):
         message = self.alert_meet_message_builder(notification_data=notification_data)
+        await self._bot.send_message(
+            user_id=notification_data.user_max_id,
+            text=message
+        )
+
+    def self_booking_message_builder(self, notification_data: SelfBookingNotification) -> str:
+        meet_start_at = self.from_utc_naive(
+            dt_utc=notification_data.meet_start_at,
+            tz_offset_hours=notification_data.user_timezone
+        )
+
+        meet_end_at = self.from_utc_naive(
+            dt_utc=notification_data.meet_end_at,
+            tz_offset_hours=notification_data.user_timezone
+        )
+        return f"""✅ Вы успешно запланировали встречу
+
+        Название: {notification_data.title}
+        Начало в: {meet_start_at}
+        Конец в:  {meet_end_at}
+        """
+
+    async def self_booking_notification(self, notification_data: SelfBookingNotification):
+        message = self.self_booking_message_builder(notification_data=notification_data)
         await self._bot.send_message(
             user_id=notification_data.user_max_id,
             text=message

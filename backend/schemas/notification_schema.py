@@ -39,3 +39,11 @@ class MeetAlertNotification(BaseModel):
     user_timezone: int
     meeting_url: Optional[str] = None
     alert_offset_minutes: int
+
+
+class SelfBookingNotification(BaseModel):
+    meet_start_at: datetime
+    meet_end_at: datetime
+    title: str
+    user_max_id: int
+    user_timezone: int

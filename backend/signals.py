@@ -9,3 +9,5 @@ new_slot_signal: Final = signal("new_slot")
 confirm_time_slot_signal: Final = signal("confirm_slot")
 
 alert_before_meet_signal: Final = signal("alert_before_meet")
+
+self_booking_signal: Final = signal("self_booking_signal")

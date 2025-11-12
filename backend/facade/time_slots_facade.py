@@ -19,7 +19,8 @@ from backend.exceptions import (
 from backend.schemas.notification_schema import (
     Notification,
     ConfirmTimeSlotNotification,
-    MeetAlertNotification
+    MeetAlertNotification,
+    SelfBookingNotification
 )
 from backend.schemas.time_slots_schema import (
     SelfTimeSlotsGetResponse,
@@ -32,7 +33,8 @@ from backend.client.gigachat_client import GigachatClient
 from backend.signals import (
     new_slot_signal,
     alert_before_meet_signal,
-    confirm_time_slot_signal
+    confirm_time_slot_signal,
+    self_booking_signal
 )
 
 
@@ -148,6 +150,16 @@ class TimeSlotsFacade:
             confirm=True,
             title=title,
             description=description
+        )
+
+        await self_booking_signal.send_async(
+            SelfBookingNotification(
+                meet_start_at=meet_start_at,
+                meet_end_at=meet_end_at,
+                title=title,
+                user_max_id=user.id,
+                user_timezone=owner_settings.timezone
+            )
         )
 
         return time_slot.id
