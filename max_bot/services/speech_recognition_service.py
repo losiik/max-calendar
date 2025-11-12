@@ -11,7 +11,7 @@ class SpeechRecognitionService:
     def __init__(self):
         current_file_path = os.path.abspath(__file__)
         print(current_file_path)
-        model_path = './vosk-model-small-ru-0.22'
+        model_path = '../vosk-model-small-ru-0.22'
         self.model = Model(model_path)
 
     async def recognize_from_bytes(self, file_path):
