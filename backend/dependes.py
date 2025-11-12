@@ -4,12 +4,14 @@ from backend.repository.user_repository import UserRepository
 from backend.repository.settings_repository import SettingsRepository
 from backend.repository.time_slots_repository import TimeSlotsRepository
 from backend.repository.share_repository import ShareRepository
+from backend.repository.time_slot_alert_repository import TimeSlotAlertRepository
 
 from backend.services.user_service import UserService
 from backend.services.settings_service import SettingsService
 from backend.services.time_slots_service import TimeSlotsService
 from backend.services.share_service import ShareService
 from backend.services.notification_service import NotificationService
+from backend.services.time_slot_alert_service import TimeSlotAlertService
 
 from backend.facade.settings_facade import SettingsFacade
 from backend.facade.share_facade import ShareFacade
@@ -63,6 +65,13 @@ def get_share_repository() -> ShareRepository:
     return _share_repository
 
 
+_time_slot_alert_repository = TimeSlotAlertRepository()
+
+
+def get_time_slot_alert_repository() -> TimeSlotAlertRepository:
+    return _time_slot_alert_repository
+
+
 #######################
 #       Services      #
 #######################
@@ -112,6 +121,14 @@ def get_notification_service() -> NotificationService:
     return _notification_service
 
 
+_time_slot_alert_service = TimeSlotAlertService(
+    time_slot_alert_repository=get_time_slot_alert_repository()
+)
+
+
+def get_time_slot_alert_service() -> TimeSlotAlertService:
+    return _time_slot_alert_service
+
 #######################
 #       Facade        #
 #######################
@@ -142,7 +159,8 @@ _time_slots_facade = TimeSlotsFacade(
     user_service=get_user_service(),
     share_service=get_share_service(),
     settings_service=get_settings_service(),
-    sber_jazz_client=get_sber_jazz_client()
+    sber_jazz_client=get_sber_jazz_client(),
+    time_slot_alert_service=get_time_slot_alert_service()
 )
 
 
