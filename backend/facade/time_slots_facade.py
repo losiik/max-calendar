@@ -395,9 +395,9 @@ class TimeSlotsFacade:
                     and
                     slot.meet_start_at >= invited_settings.work_time_start
             ) and (
-                    slot.meet_end_at <= owner_settings.meet_end_at
+                    slot.meet_end_at <= owner_settings.work_time_start
                     and
-                    slot.meet_end_at <= invited_settings.meet_end_at
+                    slot.meet_end_at <= invited_settings.work_time_start
             ):
                 external_slots.append(slot)
 
