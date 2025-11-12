@@ -214,9 +214,9 @@ class NotificationService:
         )
         return f"""✅ Вы успешно запланировали встречу
 
-        Название: {notification_data.title}
-        Начало в: {meet_start_at}
-        Конец в:  {meet_end_at}
+Название: {notification_data.title}
+Начало в: {meet_start_at}
+Конец в:  {meet_end_at}
         """
 
     async def self_booking_notification(self, notification_data: SelfBookingNotification):

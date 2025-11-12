@@ -157,7 +157,7 @@ class TimeSlotsFacade:
                 meet_start_at=meet_start_at,
                 meet_end_at=meet_end_at,
                 title=title,
-                user_max_id=user.id,
+                user_max_id=user.max_id,
                 user_timezone=owner_settings.timezone
             )
         )

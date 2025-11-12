@@ -46,7 +46,7 @@ class GigachatClient:
           "meet_start_at": "18:00",
           "meet_end_at": "20:00",
           "description": "Встреча, как указано в тексте",
-          "date": "{(datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')}",
+          "date": null,
           "weekday": null,
           "is_today": false,
           "is_tomorrow": true,
