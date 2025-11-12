@@ -31,8 +31,11 @@ class TimeSlotService:
     ) -> str:
         message = ""
         for slot in data['time_slots']:
+            meet_start_at = str(slot['meet_start_at']).replace('.', ':')
+            meet_end_at = str(slot['meet_end_at']).replace('.', ':')
+
             message += f"""Название: {slot['title']}
-Дата: c {slot['meet_start_at']} по {slot['meet_end_at']}
+Дата: c {meet_start_at} по {meet_end_at}
 """
             if slot.get('description', None):
                 message += f"Описание: {slot['description']}"
@@ -40,6 +43,9 @@ class TimeSlotService:
                 message += f"Ссылка на встречу: {slot['meeting_url']}"
 
             message += "\n\n"
+
+        if message != "":
+            message = "📆 Сегодняшние встречи:\n\n" + message
         return message
 
     async def get_daly_timetable(
@@ -60,3 +66,14 @@ class TimeSlotService:
         if message == "":
             return "На сегодня нет запланированных событий"
         return message
+
+    async def book_time_slot_by_text(self, max_id: int, message: str) -> Optional[str]:
+        response = await self._server_service.book_time_slot_by_text(
+            max_id=max_id,
+            message=message
+        )
+
+        if response[1] != 200:
+            logging.error(response[1])
+            return "Извините, не смог распознать текст"
+        return None
