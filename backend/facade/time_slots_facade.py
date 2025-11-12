@@ -273,6 +273,7 @@ class TimeSlotsFacade:
             user_id=user.id,
             target_date=target_date
         )
+        print(booked_slots)
 
         unique_slots = {slot.id: slot for slot in booked_slots}.values()
         unique_slots = list(unique_slots)
@@ -349,8 +350,8 @@ class TimeSlotsFacade:
         )
 
         for slot in available_external_slots:
-            slot.meet_end_at += invited_settings.timezone
-            slot.meet_end_at += invited_settings.timezone
+            slot.meet_start_at = round(slot.meet_start_at + invited_settings.timezone, 2)
+            slot.meet_end_at = round(slot.meet_end_at + invited_settings.timezone, 2)
 
         return available_external_slots
 
