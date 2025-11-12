@@ -76,3 +76,8 @@ class UpdateTimeSlots(BaseModel):
 
 class UpdateTimeSlotsRequest(UpdateTimeSlots):
     pass
+
+
+class TimeSlotSelfCreateByTextRequest(TimeSlots):
+    max_id: int
+    message: str

@@ -12,7 +12,8 @@ from backend.schemas.time_slots_schema import (
     SelfTimeSlotsGetResponse,
     ExternalTimeSlotsGetResponse,
     UpdateTimeSlotsRequest,
-    TimeSlotsModelPydantic
+    TimeSlotsModelPydantic,
+    TimeSlotSelfCreateByTextRequest
 )
 from backend.facade.time_slots_facade import TimeSlotsFacade
 from backend.exceptions import (
@@ -134,12 +135,14 @@ async def delete_time_slot(
 
 @time_slots_router.post('/self/by_text/')
 async def book_time_slot_by_text(
-        max_id: int,
-        message: str,
+        data: TimeSlotSelfCreateByTextRequest,
         time_slots_facade: TimeSlotsFacade = Depends(get_time_slots_facade)
 ):
     try:
-        await time_slots_facade.book_self_timeslot_by_text(text_message=message, user_max_id=max_id)
+        await time_slots_facade.book_self_timeslot_by_text(
+            text_message=data.message,
+            user_max_id=data.max_id
+        )
     except UserDoesNotExistsError:
         raise HTTPException(status_code=409, detail="User does not exists")
     except TimeSlotOverlapError:
