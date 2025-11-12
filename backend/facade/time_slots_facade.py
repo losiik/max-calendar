@@ -3,6 +3,7 @@ from datetime import datetime, date, timedelta, timezone
 from uuid import UUID
 import math
 from copy import deepcopy
+import re
 
 from backend.services.user_service import UserService
 from backend.services.time_slots_service import TimeSlotsService
@@ -567,7 +568,8 @@ class TimeSlotsFacade:
         return today
 
     def parse_time_to_datetime(self, date: datetime.date, time_str: str) -> datetime:
-        hour, minute = map(int, time_str.split(":"))
+        clean_time_str = re.sub(r"[^0-9:]", "", time_str)
+        hour, minute = map(int, clean_time_str.split(":"))
         return datetime.combine(date, datetime.min.time()) + timedelta(hours=hour, minutes=minute)
 
     def resolve_end_time(self, start_dt: datetime, end_str: str | None) -> datetime:
