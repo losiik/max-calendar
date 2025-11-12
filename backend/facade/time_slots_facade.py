@@ -394,7 +394,7 @@ class TimeSlotsFacade:
             if invited_settings.work_time_start <= slot.meet_start_at < invited_settings.work_time_end and invited_settings.work_time_start < slot.meet_end_at <= invited_settings.work_time_end:
                 filtered_slots.append(slot)
 
-        return available_external_slots
+        return filtered_slots
 
     async def update_time_slot(
             self,
