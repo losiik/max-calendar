@@ -45,7 +45,7 @@ export function MeetingPeriodContent() {
             }
           />
         ))}
-        <Button mode="primary" className="mt-4 w-full" onClick={handleSave} disabled={isPending}>
+        <Button data-haptic="success" mode="primary" className="mt-4 w-full" onClick={handleSave} disabled={isPending}>
           Сохранить
         </Button>
       </CellList>

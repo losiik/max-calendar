@@ -1,4 +1,4 @@
-import { Typography } from '@maxhub/max-ui'
+import { CellInput, CellList, Typography } from '@maxhub/max-ui'
 
 type Props = {
   hours: number | ''
@@ -23,19 +23,26 @@ export function TimeRangeInput({ hours, minutes, onHoursChange, onMinutesChange 
   }
 
   return (
-    <div  className='justify-between gap-4 flex row'>
-      <input
+    <div  className='justify-start gap-2 flex my-2 row '>
+      <CellList mode='island'>
+
+        <CellInput
         inputMode="numeric"
+         before={<Typography.Body>Час</Typography.Body>}
+         
         type="number"
         value={hours}
         min={0}
         max={23}
         onChange={handleHours}
-        placeholder="HH"
-        className='w-12 text-center'
+        placeholder="ЧЧ"
+
       />
-      <Typography.Body>:</Typography.Body>
-      <input
+     
+
+      <CellInput
+        title='C '
+       before={<Typography.Body>Мин</Typography.Body>}
         inputMode="numeric"
         type="number"
         value={minutes}
@@ -43,8 +50,10 @@ export function TimeRangeInput({ hours, minutes, onHoursChange, onMinutesChange 
         max={59}
         onChange={handleMinutes}
         placeholder="MM"
-        className='w-12 text-center'
+
       />
+
+      </CellList>
     </div>
   )
 }

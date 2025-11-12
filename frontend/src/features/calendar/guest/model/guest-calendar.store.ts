@@ -47,7 +47,7 @@ export const useGuestCalendarStore = create<GuestCalendarState>((set, get) => ({
         isLoading: false,
       });
     } catch (error) {
-      console.error("Failed to load guest calendar", error);
+      
       set((prev) => ({
         isLoading: false,
         ignoredTokens: [...prev.ignoredTokens, token],

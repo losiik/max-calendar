@@ -30,7 +30,7 @@ export function WorkingDaysContent() {
 
   return (
     <Panel className='rounded-lg' >
-        <CellList  className=" p-3 rounded-lg" mode="full-width" header={<Typography.Title variant='large-strong'>Настройки</Typography.Title>} >
+        <CellList  className=" p-3 rounded-lg" mode="island" header={<Typography.Title variant='large-strong'>Мне можно ставить встречи по этим дням</Typography.Title>} >
        {LABELS.map((d) => (
         <CellSimple
           key={d.key}
@@ -38,7 +38,7 @@ export function WorkingDaysContent() {
           after={<Switch checked={days[d.key]} onChange={() => toggle(d.key)} />}
         />
       ))}
-      <Button mode='primary' className="mt-4 w-full" onClick={handleSave} disabled={isPending}>
+      <Button data-haptic="success" mode='primary' className="mt-4 w-full" onClick={handleSave} disabled={isPending}>
         Сохранить
       </Button>
     </CellList>

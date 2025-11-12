@@ -1,10 +1,9 @@
-import { Button, Panel, Typography } from "@maxhub/max-ui";
+import { CellList, CellSimple, Panel } from "@maxhub/max-ui";
 import { createPortal } from "react-dom";
 
 import { useGuestCalendarStore } from "../model/guest-calendar.store";
 import { ExternalCalendarView } from "@/pages/ExternalCalendarPage/ui/ExternalCalendarView";
 import { useThemeScheme } from "@/shared/lib/theme-context";
-import { getMaxUserId } from "@/shared/lib/max-web-app";
 import { useBookSlotStore } from "@/features/calendar/book-availability/model/book-slot.store";
 import { MdClose } from "react-icons/md";
 
@@ -23,8 +22,6 @@ export function GuestCalendarOverlay() {
   if (!portalNode) return null;
 
   const handleExit = () => {
-    const currentUserId = getMaxUserId();
-    console.info("Exiting guest calendar for user", currentUserId);
     closeBooking();
     exit();
   };
@@ -40,24 +37,15 @@ export function GuestCalendarOverlay() {
         className={`w-full max-w-4xl overflow-hidden rounded-b-xl shadow-xl ${panelClass}`}
       >
         <div className="flex items-center justify-between border-b border-neutral-200/40 px-3 py-3">
-          <div >
-            
-            {ownerName && (
-              <Typography.Title className="text-neutral-500">
-                {ownerName} делится с вами календарем
-              </Typography.Title>
-            )}
-          </div>
-          <Button
-            mode="secondary"
-            appearance="neutral-themed"
-            onClick={handleExit}
-          >
-            <MdClose/>
-          </Button>
+          <CellList >
+            <CellSimple title={<><b >{ownerName}</b> делится с вами календарем</>} subtitle="Вы просматриваете чужой календарь!" after={<MdClose onClick={handleExit} />}>
+         
+            </CellSimple>
+          </CellList>
+          
         </div>
 
-        <div className="max-h-[90vh] overflow-y-auto py-3">
+        <div className="max-h-[90vh] overflow-y-auto p-3">
           <ExternalCalendarView
             calendarId={calendarId}
             title={`Календарь ${ownerName ?? "юзера"}`}

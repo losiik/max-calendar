@@ -10,6 +10,7 @@ import {
   type CalendarMonthCursor,
 } from "../api";
 import { calendarKeys } from "./query-keys";
+import { triggerHapticNotification } from "@/shared/lib/max-web-app";
 
 export const usePersonalCalendarQuery = (cursor: CalendarMonthCursor) => {
   return useQuery({
@@ -35,6 +36,7 @@ export const useCreateEventMutation = () => {
   return useMutation({
     mutationFn: (payload: CreateEventPayload) => createEvent(payload),
     onSuccess: () => {
+      triggerHapticNotification("success");
       queryClient.invalidateQueries({
         queryKey: calendarKeys.personalRoot(),
         exact: false,
@@ -49,6 +51,7 @@ export const useBookSlotMutation = (calendarId: string) => {
   return useMutation({
     mutationFn: (payload: CreateEventPayload) => bookSlot(calendarId, payload),
     onSuccess: () => {
+      triggerHapticNotification("success");
       queryClient.invalidateQueries({
         queryKey: calendarKeys.sharedRoot(calendarId),
         exact: false,
@@ -67,6 +70,8 @@ export const useDeleteEventMutation = () => {
   return useMutation({
     mutationFn: (slotId: string) => deleteOwnTimeSlot(slotId),
     onSuccess: () => {
+      triggerHapticNotification("success");
+
       queryClient.invalidateQueries({
         queryKey: calendarKeys.personalRoot(),
         exact: false,

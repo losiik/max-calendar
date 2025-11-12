@@ -18,6 +18,7 @@ import { FaRegCalendarTimes } from "react-icons/fa";
 import { MdCheck, MdClose } from "react-icons/md";
 import { useSettingsQuery } from "@/entities/settings/queries";
 
+
 type ExternalBookingFormProps = {
   calendarId: string;
 };
@@ -42,7 +43,7 @@ export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
     settings.working_days?.length &&
     settings.duration_minutes
   ) {
-    console.log("settings filled in!");
+    
     setSettingsFilledIn(true);
   }
   }, [settings]);
@@ -53,6 +54,7 @@ export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
   const isSubmitDisabled = !title || !selectedRange;
   const handleSubmit = async () => {
     if (!selectedRange) return;
+
     await mutation
       .mutateAsync({
         title,
@@ -74,6 +76,15 @@ export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
     close();
   };
 
+  const handleClose = () => {
+
+    close();
+  };
+
+  const handleSelectRange = (range: typeof availability[number]) => {
+    selectRange(range);
+  };
+
   return (
     <div className="fixed inset-x-0 bottom-0 z-20">
       <div className="mx-auto w-full max-w-md ">
@@ -89,7 +100,7 @@ export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
             <Button
               mode="secondary"
               appearance="neutral-themed"
-              onClick={close}
+              onClick={handleClose}
             >
               <MdClose />
             </Button>
@@ -115,7 +126,7 @@ export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
                       <CellSimple
                         key={`${range.start}-${range.end}`}
                         before={isActive ? <MdCheck /> : null}
-                        onClick={() => selectRange(range)}
+                        onClick={() => handleSelectRange(range)}
                         title={`${range.start} - ${range.end}`}
                         aria-pressed={isActive}
                         subtitle={"Свободно"}
@@ -151,6 +162,7 @@ export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
 
           <Flex gap={1} className="mt-4">
             <Button
+              data-haptic="success"
               mode="primary"
               appearance="neutral-themed"
               stretched
