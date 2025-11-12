@@ -61,8 +61,8 @@ class NotificationService:
             dt_utc=notification_data.meet_end_at,
             tz_offset_hours=notification_data.owner_time_zone
         )
-        meet_start_at = meet_start_at.strftime("%y.%m.%d %H:%M")
-        meet_end_at = meet_end_at.strftime("%y.%m.%d %H:%M")
+        meet_start_at = meet_start_at.strftime("%d.%m.%yy %H:%M")
+        meet_end_at = meet_end_at.strftime("%d.%m.%yy %H:%M")
 
         return f"""Пользователь {notification_data.invite_user_name} хочет запланировать с вами встречу
 Название: {notification_data.title}
@@ -113,8 +113,8 @@ class NotificationService:
             tz_offset_hours=notification_data.invite_timezone
         )
 
-        invited_meet_start_at = invited_meet_start_at.strftime("%y.%m.%d %H:%M")
-        invited_meet_end_at = invited_meet_end_at.strftime("%y.%m.%d %H:%M")
+        invited_meet_start_at = invited_meet_start_at.strftime("%d.%m.%yy %H:%M")
+        invited_meet_end_at = invited_meet_end_at.strftime("%d.%m.%yy %H:%M")
         if notification_data.owner_user_max_id == notification_data.invite_user_max_id:
             if notification_data.confirm:
                 confirm_text = "подтвердили"
@@ -150,8 +150,8 @@ class NotificationService:
             tz_offset_hours=notification_data.owner_timezone
         )
 
-        owner_meet_start_at = owner_meet_start_at.strftime("%y.%m.%d %H:%M")
-        owner_meet_end_at = owner_meet_end_at.strftime("%y.%m.%d %H:%M")
+        owner_meet_start_at = owner_meet_start_at.strftime("%d.%m.%yy %H:%M")
+        owner_meet_end_at = owner_meet_end_at.strftime("%d.%m.%yy %H:%M")
 
         if notification_data.confirm:
             confirm_text = "подтвердили"
@@ -196,8 +196,8 @@ class NotificationService:
             tz_offset_hours=notification_data.user_timezone
         )
 
-        meet_start_at = meet_start_at.strftime("%y.%m.%d %H:%M")
-        meet_end_at = meet_end_at.strftime("%y.%m.%d %H:%M")
+        meet_start_at = meet_start_at.strftime("%d.%m.%yy %H:%M")
+        meet_end_at = meet_end_at.strftime("%d.%m.%yy %H:%M")
 
         return f"""Через {notification_data.alert_offset_minutes} минут у вас стоится встреча с пользователем {notification_data.invite_use_name}
         
@@ -224,8 +224,8 @@ class NotificationService:
             dt_utc=notification_data.meet_end_at,
             tz_offset_hours=notification_data.user_timezone
         )
-        meet_start_at = meet_start_at.strftime("%y.%m.%d %H:%M")
-        meet_end_at = meet_end_at.strftime("%y.%m.%d %H:%M")
+        meet_start_at = meet_start_at.strftime("%d.%m.%yy %H:%M")
+        meet_end_at = meet_end_at.strftime("%d.%m.%yy %H:%M")
         return f"""✅ Вы успешно запланировали встречу
 
 Название: {notification_data.title}
