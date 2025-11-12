@@ -11,13 +11,11 @@ class SpeechRecognitionService:
     def __init__(self):
         base_dir = os.path.dirname(os.path.abspath(__file__))
 
-        # Поднимаемся на один уровень вверх (из services → max_bot)
         model_path = os.path.join(base_dir, "..", "vosk-model-small-ru-0.22")
         model_path = os.path.abspath(model_path)  # нормализуем путь
 
-        print(f"Загружаю модель из: {model_path}")
+        logging.info(f"Загружаю модель из: {model_path}")
 
-        # Проверим, что модель реально существует
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"❌ Модель не найдена по пути: {model_path}")
         self.model = Model(model_path)
@@ -41,6 +39,5 @@ class SpeechRecognitionService:
                 partial_result = recognizer.PartialResult()
                 logging.info(json.loads(partial_result)["partial"])
 
-        # Получаем окончательный результат
         final_result = recognizer.FinalResult()
         return json.loads(final_result)["text"]
