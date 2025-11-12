@@ -31,7 +31,7 @@ PORT - опциональный порт FastAPI (по умолчанию 9000).
 
 Frontend (`frontend/.env.local` или любой env для Vite):  
 VITE_API_BASE_URL - адрес backend, обычно https://<домен>/api/v1.  
-VITE_MAX_USER_ID - опциональная заглушка для запуска вне Telegram.
+VITE_MAX_USER_ID - опциональная заглушка для запуска вне Max.
 
 Bot (`max_bot/.env`):  
 MAX_API_KEY - токен MAX.  

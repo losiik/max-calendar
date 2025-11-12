@@ -11,19 +11,23 @@ import {
 } from "@/shared/lib/max-web-app";
 import { useGuestCalendarStore } from "@/features/calendar/guest/model/guest-calendar.store";
 import { GuestCalendarOverlay } from "@/features/calendar/guest/ui/GuestCalendarOverlay";
-import { ensureUserRegistered, getBrowserTimezoneHours, saveSettings } from "@/entities/event/api";
+import {
+  ensureUserRegistered,
+  getBrowserTimezoneHours,
+  saveSettings,
+} from "@/entities/event/api";
 
 export default function App() {
   const initGuest = useGuestCalendarStore((state) => state.initFromPayload);
 
   useEffect(() => {
-   (async function() {
-     const isRegistered = await ensureUserRegistered();
-    if (isRegistered) {
-      console.log("User is registered");  
-      saveSettings({timezone: getBrowserTimezoneHours()})
-    }
-   })();
+    (async function () {
+      const isRegistered = await ensureUserRegistered();
+      if (isRegistered) {
+        console.log("User is registered");
+        saveSettings({ timezone: getBrowserTimezoneHours() });
+      }
+    })();
   }, []);
 
   useEffect(() => {
@@ -48,18 +52,29 @@ export default function App() {
         "[data-haptic], button, [role='button']"
       );
       if (!button) return;
-      const attr = (button.getAttribute("data-haptic") ?? "light").toLowerCase();
+      const attr = (
+        button.getAttribute("data-haptic") ?? "light"
+      ).toLowerCase();
       if (attr === "none") return;
       if (attr === "success") {
-        triggerHapticNotification("success");
-        return;
+        try {
+          triggerHapticNotification("success");
+        } catch (e: Error | unknown) {
+          return
+        }
+       return
       }
       const impact = (
         ["soft", "light", "medium", "heavy", "rigid"].includes(attr)
           ? attr
           : "light"
       ) as HapticImpactStyle;
-      triggerHapticImpact(impact);
+      try {
+        triggerHapticImpact(impact);
+        
+      } catch (e: Error | unknown) {
+        return
+      }
     };
 
     document.addEventListener("click", handleButtonClick, true);
