@@ -2,6 +2,7 @@ from max_bot.services.server_service import ServerService
 from max_bot.services.user_service import UserService
 from max_bot.services.share_service import ShareService
 from max_bot.services.time_slot_service import TimeSlotService
+from max_bot.services.speech_recognition_service import SpeechRecognitionService
 
 from max_bot.settings.settings import settings
 
@@ -39,3 +40,10 @@ _time_slot_service = TimeSlotService(
 
 def get_time_slot_service() -> TimeSlotService:
     return _time_slot_service
+
+
+_speech_recognition_service = SpeechRecognitionService()
+
+
+def get_speech_recognition_service() -> SpeechRecognitionService:
+    return _speech_recognition_service
