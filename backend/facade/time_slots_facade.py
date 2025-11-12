@@ -273,7 +273,6 @@ class TimeSlotsFacade:
             user_id=user.id,
             target_date=target_date
         )
-        print(booked_slots)
 
         unique_slots = {slot.id: slot for slot in booked_slots}.values()
         unique_slots = list(unique_slots)
@@ -332,10 +331,30 @@ class TimeSlotsFacade:
             target_date=target_date
         )
 
+        for slot in owner_booked_slots:
+            slot.meet_start_at = self.from_utc_naive(
+                dt_utc=slot.meet_start_at,
+                tz_offset_hours=invited_settings.timezone
+            )
+            slot.meet_end_at = self.from_utc_naive(
+                dt_utc=slot.meet_end_at,
+                tz_offset_hours=invited_settings.timezone
+            )
+
         invited_booked_slots = await self._time_slots_service.get_time_self_slots(
             user_id=invited_user.id,
             target_date=target_date
         )
+
+        for slot in invited_booked_slots:
+            slot.meet_start_at = self.from_utc_naive(
+                dt_utc=slot.meet_start_at,
+                tz_offset_hours=invited_settings.timezone
+            )
+            slot.meet_end_at = self.from_utc_naive(
+                dt_utc=slot.meet_end_at,
+                tz_offset_hours=invited_settings.timezone
+            )
 
         all_owner_slots = self.generate_daily_time_slots(
             work_time_start=owner_settings.work_time_start,
@@ -348,10 +367,6 @@ class TimeSlotsFacade:
             owner_booked_slots=owner_booked_slots,
             invited_booked_slots=invited_booked_slots
         )
-
-        for slot in available_external_slots:
-            slot.meet_start_at = round(slot.meet_start_at + invited_settings.timezone, 2)
-            slot.meet_end_at = round(slot.meet_end_at + invited_settings.timezone, 2)
 
         return available_external_slots
 
