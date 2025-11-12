@@ -8,6 +8,7 @@ from backend.services.user_service import UserService
 from backend.services.time_slots_service import TimeSlotsService
 from backend.services.share_service import ShareService
 from backend.services.settings_service import SettingsService
+from backend.services.time_slot_alert_service import TimeSlotAlertService
 from backend.exceptions import (
     UserDoesNotExistsError,
     ShareTokenDoesNotExistsError,
@@ -40,13 +41,15 @@ class TimeSlotsFacade:
             time_slots_service: TimeSlotsService,
             share_service: ShareService,
             settings_service: SettingsService,
-            sber_jazz_client: SberJazzClient
+            sber_jazz_client: SberJazzClient,
+            time_slot_alert_service: TimeSlotAlertService
     ):
         self._user_service = user_service
         self._time_slots_service = time_slots_service
         self._share_service = share_service
         self._settings_service = settings_service
         self._sber_jazz_client = sber_jazz_client
+        self._time_slot_alert_service = time_slot_alert_service
 
     def to_utc_naive(self, dt: datetime, tz_offset_hours: int) -> datetime:
         if dt.tzinfo is None:
@@ -464,29 +467,45 @@ class TimeSlotsFacade:
                 invited_user = await self._user_service.get_by_user_id(user_id=slot.invited_id)
 
                 if send_notification_to_owner:
-                    await alert_before_meet_signal.send_async(
-                        MeetAlertNotification(
-                            meet_start_at=slot.meet_start_at,
-                            meet_end_at=slot.meet_end_at,
-                            title=slot.title,
-                            invite_use_name=invited_user.name,
-                            user_max_id=owner_user.max_id,
-                            user_timezone=owner_settings.timezone,
-                            meeting_url=slot.meeting_url,
-                            alert_offset_minutes=owner_settings.alert_offset_minutes
+                    if await self._time_slot_alert_service.get_by_user_id_and_time_slot_id(
+                            user_id=owner_user.id,
+                            time_slot_id=slot.id
+                    ):
+                        await alert_before_meet_signal.send_async(
+                            MeetAlertNotification(
+                                meet_start_at=slot.meet_start_at,
+                                meet_end_at=slot.meet_end_at,
+                                title=slot.title,
+                                invite_use_name=invited_user.name,
+                                user_max_id=owner_user.max_id,
+                                user_timezone=owner_settings.timezone,
+                                meeting_url=slot.meeting_url,
+                                alert_offset_minutes=owner_settings.alert_offset_minutes
+                            )
                         )
-                    )
+                        await self._time_slot_alert_service.create_alert(
+                            user_id=owner_user.id,
+                            time_slot_id=slot.id
+                        )
 
                 if send_notification_to_invited:
-                    await alert_before_meet_signal.send_async(
-                        MeetAlertNotification(
-                            meet_start_at=slot.meet_start_at,
-                            meet_end_at=slot.meet_end_at,
-                            title=slot.title,
-                            invite_use_name=owner_user.name,
-                            user_max_id=invited_user.max_id,
-                            user_timezone=invited_settings.timezone,
-                            meeting_url=slot.meeting_url,
-                            alert_offset_minutes=invited_settings.alert_offset_minutes
+                    if await self._time_slot_alert_service.get_by_user_id_and_time_slot_id(
+                            user_id=invited_user.id,
+                            time_slot_id=slot.id
+                    ):
+                        await alert_before_meet_signal.send_async(
+                            MeetAlertNotification(
+                                meet_start_at=slot.meet_start_at,
+                                meet_end_at=slot.meet_end_at,
+                                title=slot.title,
+                                invite_use_name=owner_user.name,
+                                user_max_id=invited_user.max_id,
+                                user_timezone=invited_settings.timezone,
+                                meeting_url=slot.meeting_url,
+                                alert_offset_minutes=invited_settings.alert_offset_minutes
+                            )
                         )
-                    )
+                        await self._time_slot_alert_service.create_alert(
+                            user_id=invited_user.id,
+                            time_slot_id=slot.id
+                        )
