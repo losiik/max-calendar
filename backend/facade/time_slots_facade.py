@@ -311,7 +311,8 @@ class TimeSlotsFacade:
                     meet_end_at=self.datetime_to_float(meet_end_at),
                     title=slot.title,
                     description=slot.description,
-                    slot_id=slot.id
+                    slot_id=slot.id,
+                    meeting_url=slot.meeting_url
                 )
             )
 
