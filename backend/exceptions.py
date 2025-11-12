@@ -16,3 +16,7 @@ class TimeSlotDoesNotExistsError(Exception):
 
 class TimeSlotOverlapError(Exception):
     """ Slot does not exists """
+
+
+class TextParserError(Exception):
+    """ Text parser error """

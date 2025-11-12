@@ -24,6 +24,7 @@ class Settings(BaseSettings):
 
     # sber
     sber_api_key: str = os.getenv("SBER_API_KEY")
+    gigachat_api_key: str = os.getenv("GIGACHAT_API_KEY")
 
 
 settings = Settings()
