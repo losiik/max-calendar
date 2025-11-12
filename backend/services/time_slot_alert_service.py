@@ -19,7 +19,7 @@ class TimeSlotAlertService:
             entity=TimeSlotAlert(
                 user_id=user_id,
                 time_slot_id=time_slot_id,
-                sent_at=datetime.now(timezone.utc)
+                sent_at=datetime.now(timezone.utc).replace(tzinfo=None)
             )
         )
 
@@ -30,7 +30,8 @@ class TimeSlotAlertService:
             user_id: UUID,
             time_slot_id: UUID
     ) -> Optional[TimeSlotAlertModelPydantic]:
-        return await self._time_slot_alert_repository.find_by_user_id_and_time_slot_id(
+        alerts = await self._time_slot_alert_repository.find_by_user_id_and_time_slot_id(
             user_id=user_id,
             time_slot_id=time_slot_id
         )
+        return alerts

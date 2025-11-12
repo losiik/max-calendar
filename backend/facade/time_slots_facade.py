@@ -459,7 +459,7 @@ class TimeSlotsFacade:
         await self.update_time_slot(time_slot_id=time_slot_id, confirm=False)
 
     def is_time_to_alert(self, meet_start_at: datetime, alert_offset_minutes: int) -> bool:
-        now = datetime.now()
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
 
         # Приводим meet_start_at к UTC
         if meet_start_at.tzinfo is None:
@@ -476,7 +476,6 @@ class TimeSlotsFacade:
 
     async def check_reminders(self):
         upcoming_time_slots = await self._time_slots_service.get_upcoming()
-        print(upcoming_time_slots)
 
         for slot in upcoming_time_slots:
             owner_settings = await self._settings_service.get_settings(
@@ -504,7 +503,7 @@ class TimeSlotsFacade:
                     if await self._time_slot_alert_service.get_by_user_id_and_time_slot_id(
                             user_id=owner_user.id,
                             time_slot_id=slot.id
-                    ) == []:
+                    ) is None:
                         await alert_before_meet_signal.send_async(
                             MeetAlertNotification(
                                 meet_start_at=slot.meet_start_at,
@@ -526,7 +525,7 @@ class TimeSlotsFacade:
                     if await self._time_slot_alert_service.get_by_user_id_and_time_slot_id(
                             user_id=invited_user.id,
                             time_slot_id=slot.id
-                    ) == []:
+                    ) is None:
                         await alert_before_meet_signal.send_async(
                             MeetAlertNotification(
                                 meet_start_at=slot.meet_start_at,

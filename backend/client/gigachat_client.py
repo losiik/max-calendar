@@ -109,8 +109,8 @@ class GigachatClient:
                     logging.info(f"⚠️ Ошибка парсинга JSON, попытка {attempt}/{self.max_retries}... повтор через {delay}s")
                     await asyncio.sleep(self.delay)
                 else:
-                    print("❌ Не удалось получить корректный JSON после 3 попыток.")
+                    logging.info("❌ Не удалось получить корректный JSON после 3 попыток.")
                     return None
             except Exception as e:
-                print(f"❌ Ошибка при вызове GigaChat: {e}")
+                logging.info(f"❌ Ошибка при вызове GigaChat: {e}")
                 return None
