@@ -8,7 +8,7 @@ from vosk import Model, KaldiRecognizer
 
 class SpeechRecognitionService:
     def __init__(self):
-        model_path = 'vosk-model-small-ru-0.22'
+        model_path = './vosk-model-small-ru-0.22'
         self.model = Model(model_path)
 
     async def recognize_from_bytes(self, file_path):
