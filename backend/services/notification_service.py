@@ -106,19 +106,23 @@ class NotificationService:
         )
         if notification_data.owner_user_max_id == notification_data.invite_user_max_id:
             if notification_data.confirm:
-                confirm_text = "подтвердил"
+                confirm_text = "подтвердили"
+                emoji = "✅"
             else:
-                confirm_text = "не подтвердил или отменил"
-            return f"""Вы {confirm_text} встречу
+                confirm_text = "не подтвердили или отменили"
+                emoji = "❌"
+            return f"""{emoji} Вы {confirm_text} встречу
 Название: {notification_data.title}    
 Время: с {invited_meet_start_at} по {invited_meet_end_at}        
 """
         if notification_data.confirm:
             confirm_text = "подтвердил"
+            emoji = "✅"
         else:
             confirm_text = "не подтвердил или отменил"
+            emoji = "❌"
 
-        return f"""Пользователь {notification_data.owner_user_user_name} {confirm_text} с вами встречу
+        return f"""{emoji} Пользователь {notification_data.owner_user_user_name} {confirm_text} с вами встречу
 Название: {notification_data.title}
 Время: с {invited_meet_start_at} по {invited_meet_end_at}
 Ссылка на встречу: {notification_data.meeting_url}
@@ -137,10 +141,12 @@ class NotificationService:
 
         if notification_data.confirm:
             confirm_text = "подтвердили"
+            emoji = "✅"
         else:
             confirm_text = "отменили"
+            emoji = "❌"
 
-        return f"""Вы успешно {confirm_text} встречу с {notification_data.invite_use_name}
+        return f"""{emoji} Вы успешно {confirm_text} встречу с {notification_data.invite_use_name}
 Название: {notification_data.title}
 Время: с {owner_meet_start_at} по {owner_meet_end_at}
 Ссылка на встречу: {notification_data.meeting_url}
@@ -180,7 +186,7 @@ class NotificationService:
 Название: {notification_data.title}
 Начало в: {meet_start_at}
 Конец в:  {meet_end_at}
-Ссылка на встречу: {notification_data.meeting_url}
+Ссылка на встречу: {notification_data.meeting_url if notification_data.meeting_url is not None else 'отсутствует'}
 """
 
     async def send_alert_meet(self, notification_data: MeetAlertNotification):

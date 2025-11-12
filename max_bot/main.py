@@ -17,7 +17,8 @@ async def main():
             BotCommand(name="start", description="запустить бот"),
             BotCommand(name="calendar", description="мой календарь"),
             BotCommand(name="schedule_today", description="расписание на сегодня"),
-            BotCommand(name="share", description="поделиться календарем")
+            BotCommand(name="share", description="поделиться календарем"),
+            BotCommand(name="help", description="основная информация")
         ]
     )
     register_all_routers(dp)
