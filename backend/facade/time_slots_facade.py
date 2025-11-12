@@ -323,7 +323,6 @@ class TimeSlotsFacade:
             owner_token: str,
             target_date: date
     ) -> List[GetExternalTimeSlot]:
-        external_slots = []
         share_data = await self._share_service.get_share_data_by_token(token=owner_token)
 
         if share_data is None:
@@ -390,19 +389,12 @@ class TimeSlotsFacade:
             slot.meet_start_at -= owner_settings.timezone - invited_settings.timezone
             slot.meet_end_at -= owner_settings.timezone - invited_settings.timezone
 
-            if (
-                    slot.meet_start_at >= owner_settings.work_time_start
-                    and
-                    slot.meet_start_at >= invited_settings.work_time_start
-            ) and (
-                    slot.meet_end_at <= owner_settings.work_time_start
-                    and
-                    slot.meet_end_at <= invited_settings.work_time_start
-            ):
-                external_slots.append(slot)
+        filtered_slots = []
+        for slot in available_external_slots:
+            if invited_settings.work_time_start <= slot.meet_start_at < invited_settings.work_time_end and invited_settings.work_time_start < slot.meet_end_at <= invited_settings.work_time_end:
+                filtered_slots.append(slot)
 
-
-        return external_slots
+        return available_external_slots
 
     async def update_time_slot(
             self,
