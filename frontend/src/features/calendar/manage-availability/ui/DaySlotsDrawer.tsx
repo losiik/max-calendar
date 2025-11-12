@@ -98,7 +98,7 @@ export function DaySlotsDrawer() {
       if (event) appendEvent(event);
       setFormOpen(false);
     } catch (error) {
-      console.error(error);
+      
       setFormError("Не удалось сохранить событие. Попробуйте ещё раз.");
     }
   };
@@ -115,7 +115,7 @@ export function DaySlotsDrawer() {
       await deleteMutation.mutateAsync(slotId);
       removeEvent(slotId);
     } catch (error) {
-      console.error(error);
+      
       setDeleteError("Не удалось удалить событие. Попробуйте ещё раз.");
     } finally {
       setDeletingId(null);

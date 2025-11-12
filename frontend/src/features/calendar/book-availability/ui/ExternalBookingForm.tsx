@@ -43,7 +43,7 @@ export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
     settings.working_days?.length &&
     settings.duration_minutes
   ) {
-    console.log("settings filled in!");
+    
     setSettingsFilledIn(true);
   }
   }, [settings]);

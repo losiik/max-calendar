@@ -24,7 +24,7 @@ export default function App() {
     (async function () {
       const isRegistered = await ensureUserRegistered();
       if (isRegistered) {
-        console.log("User is registered");
+        
         saveSettings({ timezone: getBrowserTimezoneHours() });
       }
     })();
