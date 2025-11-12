@@ -91,13 +91,13 @@ class TimeSlotsFacade:
         owner_settings = await self._settings_service.get_settings(user_id=owner_user.id)
 
         utc_meet_start_at = self.to_utc_naive(dt=meet_start_at, tz_offset_hours=owner_settings.timezone)
-        aware_meet_end_at = self.to_utc_naive(dt=meet_end_at, tz_offset_hours=owner_settings.timezone)
+        utc_meet_end_at = self.to_utc_naive(dt=meet_end_at, tz_offset_hours=owner_settings.timezone)
 
         time_slot = await self._time_slots_service.create_time_slot(
             owner_id=owner_user.id,
             invited_id=invited_user.id,
             meet_start_at=utc_meet_start_at,
-            meet_end_at=aware_meet_end_at,
+            meet_end_at=utc_meet_end_at,
             confirm=False,
             title=title,
             description=description
@@ -107,8 +107,8 @@ class TimeSlotsFacade:
             Notification(
                 invite_user_name=invited_user.name,
                 owner_user_max_id=owner_user.max_id,
-                meet_start_at=meet_start_at,
-                meet_end_at=meet_end_at,
+                meet_start_at=utc_meet_start_at,
+                meet_end_at=utc_meet_end_at,
                 title=title,
                 description=description,
                 time_slot_id=time_slot.id,
