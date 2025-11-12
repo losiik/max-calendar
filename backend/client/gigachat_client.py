@@ -1,5 +1,6 @@
 import json
-from datetime import datetime, timedelta
+import logging
+import asyncio
 from typing import Dict, Any, Optional
 
 from gigachat import GigaChatAsyncClient
@@ -20,6 +21,8 @@ class GigachatClient:
             model=model,
             verify_ssl_certs=False
         )
+        self.max_retries = 3
+        self.delay = 0.5
 
     def _build_prompt(self, message: str) -> str:
         return f"""
@@ -28,16 +31,26 @@ class GigachatClient:
         Верни ответ строго в формате JSON без пояснений.
         Все ключи должны присутствовать, даже если значение null.
 
-        Если дата не указана явно, поле "date" должно быть null.
-        Если указан только день недели (например, "в понедельник"),
-        поле "weekday" должно содержать этот день в коротком формате:
-        "пн", "вт", "ср", "чт", "пт", "сб", "вс".
+        ⚙️ Формат вывода:
+        Верни строго JSON без пояснений, только объект, со следующими ключами:
+        - "title": str — название встречи;
+        - "meet_start_at": str или null — время начала (в 24-часовом формате HH:MM);
+        - "meet_end_at": str или null — время конца (в 24-часовом формате HH:MM);
+        - "description": str — краткое описание;
+        - "date": str или null — дата в строгом формате ISO (YYYY-MM-DD);
+        - "weekday": str или null — день недели ('пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс');
+        - "is_today": bool или null;
+        - "is_tomorrow": bool или null;
+        - "is_after_tomorrow": bool или null.
 
-        Если дата указана словами:
-        - "сегодня" → is_today = true
-        - "завтра" → is_tomorrow = true
-        - "послезавтра" → is_after_tomorrow = true
-
+        ❗ ВАЖНО:
+        - Формат даты всегда должен быть YYYY-MM-DD (например, "2025-11-19").
+        - Никогда не используй точки, слэши или сокращения вроде "19.11." или "19/11".
+        - Если дата указана словами ("завтра", "послезавтра") — вычисли и подставь ISO-дату.
+        - Если дата не указана явно — верни "date": null.
+        - Если указан только день недели (например, "в понедельник") — верни "weekday": "пн", но "date": null.
+        - Все ключи должны присутствовать, даже если значение null.
+        
         Пример 1:
         Вход: "запланируй встречу на завтра с 18:00 до 20:00"
         Выход:
@@ -74,19 +87,30 @@ class GigachatClient:
     async def parse_message(self, message: str) -> Optional[Dict[str, Any]]:
         prompt = self._build_prompt(message)
 
-        response = await self.giga.achat(prompt)
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                response = await self.giga.achat(prompt)
+                content = response.choices[0].message.content.strip()
 
-        content = response.choices[0].message.content
+                # Попытка распарсить JSON
+                parsed = json.loads(content)
 
-        try:
-            parsed = json.loads(content)
-        except json.JSONDecodeError:
-            return None
+                # Гарантируем наличие всех ключей
+                for key in [
+                    "title", "meet_start_at", "meet_end_at", "description",
+                    "date", "weekday", "is_today", "is_tomorrow", "is_after_tomorrow"
+                ]:
+                    parsed.setdefault(key, None)
 
-        for key in [
-            "title", "meet_start_at", "meet_end_at", "description",
-            "date", "weekday", "is_today", "is_tomorrow", "is_after_tomorrow"
-        ]:
-            parsed.setdefault(key, None)
+                return parsed
 
-        return parsed
+            except json.JSONDecodeError:
+                if attempt < self.max_retries:
+                    logging.info(f"⚠️ Ошибка парсинга JSON, попытка {attempt}/{self.max_retries}... повтор через {delay}s")
+                    await asyncio.sleep(self.delay)
+                else:
+                    print("❌ Не удалось получить корректный JSON после 3 попыток.")
+                    return None
+            except Exception as e:
+                print(f"❌ Ошибка при вызове GigaChat: {e}")
+                return None
