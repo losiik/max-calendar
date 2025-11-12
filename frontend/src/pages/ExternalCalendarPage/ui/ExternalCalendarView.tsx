@@ -1,4 +1,4 @@
-import { Button, Typography } from "@maxhub/max-ui";
+import { Button, Dot, Flex, Typography } from "@maxhub/max-ui";
 import { useState } from "react";
 
 import { Calendar } from "@/widgets/Calendar/ui/Calendar";
@@ -6,6 +6,8 @@ import { useSharedCalendarQuery } from "@/entities/event/model/queries";
 import { useBookSlotStore } from "@/features/calendar/book-availability/model/book-slot.store";
 import { ExternalBookingForm } from "@/features/calendar/book-availability/ui/ExternalBookingForm";
 import type { ISODateString } from "@/entities/event/model/types";
+import { PALETTE } from "@/shared/config/consts/consts";
+import { useThemeScheme } from "@/shared/lib/theme-context";
 
 type ExternalCalendarViewProps = {
   calendarId: string;
@@ -40,24 +42,24 @@ export function ExternalCalendarView({
   const disableMonth = !isLoading && !hasSlots;
 
   const handleSelectDay = (isoDate: ISODateString) => {
-    const day =
-      days.find((d) => d.date === isoDate) ?? {
-        date: isoDate,
-        events: [],
-        availability: [],
-        isDisabled: true,
-      };
+    const day = days.find((d) => d.date === isoDate) ?? {
+      date: isoDate,
+      events: [],
+      availability: [],
+      isDisabled: true,
+    };
     openDay(day);
   };
 
-  return (
-    <div className="flex w-full flex-col gap-4 px-3">
-      {!hideHeader && (
-        <div className="flex items-center justify-between">
-          <div>
+  const theme = useThemeScheme();
 
+  return (
+    <div className="flex w-full flex-col gap-4 ">
+      {!hideHeader && (
+        <div className="flex items-center justify-between px-3">
+          <div>
             {ownerName && (
-              <Typography.Title className="text-neutral-500">
+              <Typography.Title className="text-neutral-500 ">
                 {ownerName} делится с вами календарем
               </Typography.Title>
             )}
@@ -91,9 +93,12 @@ export function ExternalCalendarView({
 
       {disableMonth && !isLoading && (
         <Typography.Label className="text-center text-neutral-500">
-          Нет доступных слотов на этот месяц
+          У пользователя {ownerName} нет свободных слотов на этот месяц
         </Typography.Label>
       )}
+      <Flex direction="row" gap="2" className="text-neutral-500 p-3" align="center">
+        <Dot className={`${PALETTE[theme].availability} mr-2`} /> - Дни со свободными слотами
+      </Flex>
 
       <ExternalBookingForm calendarId={calendarId} />
     </div>

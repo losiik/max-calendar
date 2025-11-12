@@ -58,6 +58,7 @@ export default function AgendaContent() {
             Сбросить
           </Button>
           <Button
+            data-haptic="success"
             mode="primary"
             className="flex-1"
             disabled={!dirty || isPending}
