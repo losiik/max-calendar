@@ -18,7 +18,8 @@ from backend.facade.time_slots_facade import TimeSlotsFacade
 from backend.exceptions import (
     UserDoesNotExistsError,
     ShareTokenDoesNotExistsError,
-    TimeSlotOverlapError
+    TimeSlotOverlapError,
+    TextParserError
 )
 
 
@@ -129,3 +130,20 @@ async def delete_time_slot(
         time_slots_facade: TimeSlotsFacade = Depends(get_time_slots_facade)
 ):
     await time_slots_facade.delete_self_time_slot(max_id=max_id, time_slot_id=time_slot_id)
+
+
+@time_slots_router.post('/self/by_text/')
+async def book_time_slot_by_text(
+        max_id: int,
+        message: str,
+        time_slots_facade: TimeSlotsFacade = Depends(get_time_slots_facade)
+):
+    try:
+        await time_slots_facade.book_self_timeslot_by_text(text_message=message, user_max_id=max_id)
+    except UserDoesNotExistsError:
+        raise HTTPException(status_code=409, detail="User does not exists")
+    except TimeSlotOverlapError:
+        raise HTTPException(status_code=409, detail="Time slot overlap")
+    except TextParserError:
+        raise HTTPException(status_code=400, detail="Parsing message error")
+

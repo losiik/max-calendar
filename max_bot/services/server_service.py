@@ -44,3 +44,13 @@ class ServerService:
             logging.info(url)
             async with session.get(url) as r:
                 return await r.json(), r.status
+
+    async def book_time_slot_by_text(self, max_id: int, message: str) -> tuple[dict, int]:
+        async with aiohttp.ClientSession(timeout=self.timeout) as session:
+            data = {
+                "max_id": max_id,
+                "message": message
+            }
+            url = f"{self.base_url_api}api/v1/time_slots/self/by_text/"
+            async with session.post(url, json=data) as r:
+                return await r.json(), r.status

@@ -18,6 +18,7 @@ from backend.facade.share_facade import ShareFacade
 from backend.facade.time_slots_facade import TimeSlotsFacade
 
 from backend.client.sber_jazz_client import SberJazzClient
+from backend.client.gigachat_client import GigachatClient
 
 #######################
 #       Client        #
@@ -31,6 +32,15 @@ _sber_jazz_client = SberJazzClient(
 
 def get_sber_jazz_client() -> SberJazzClient:
     return _sber_jazz_client
+
+
+_gigachat_client = GigachatClient(
+    settings=settings
+)
+
+
+def get_gigachat_client() -> GigachatClient:
+    return _gigachat_client
 
 
 #######################
@@ -160,7 +170,8 @@ _time_slots_facade = TimeSlotsFacade(
     share_service=get_share_service(),
     settings_service=get_settings_service(),
     sber_jazz_client=get_sber_jazz_client(),
-    time_slot_alert_service=get_time_slot_alert_service()
+    time_slot_alert_service=get_time_slot_alert_service(),
+    gigachat_client=get_gigachat_client()
 )
 
 

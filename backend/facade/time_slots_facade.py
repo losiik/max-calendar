@@ -13,7 +13,8 @@ from backend.exceptions import (
     UserDoesNotExistsError,
     ShareTokenDoesNotExistsError,
     TimeSlotDoesNotExistsError,
-    TimeSlotOverlapError
+    TimeSlotOverlapError,
+    TextParserError
 )
 from backend.schemas.notification_schema import (
     Notification,
@@ -27,6 +28,7 @@ from backend.schemas.time_slots_schema import (
     GetExternalTimeSlot
 )
 from backend.client.sber_jazz_client import SberJazzClient
+from backend.client.gigachat_client import GigachatClient
 from backend.signals import (
     new_slot_signal,
     alert_before_meet_signal,
@@ -42,7 +44,8 @@ class TimeSlotsFacade:
             share_service: ShareService,
             settings_service: SettingsService,
             sber_jazz_client: SberJazzClient,
-            time_slot_alert_service: TimeSlotAlertService
+            time_slot_alert_service: TimeSlotAlertService,
+            gigachat_client: GigachatClient
     ):
         self._user_service = user_service
         self._time_slots_service = time_slots_service
@@ -50,6 +53,7 @@ class TimeSlotsFacade:
         self._settings_service = settings_service
         self._sber_jazz_client = sber_jazz_client
         self._time_slot_alert_service = time_slot_alert_service
+        self._gigachat_client = gigachat_client
 
     def to_utc_naive(self, dt: datetime, tz_offset_hours: int) -> datetime:
         if dt.tzinfo is None:
@@ -525,3 +529,59 @@ class TimeSlotsFacade:
                             user_id=invited_user.id,
                             time_slot_id=slot.id
                         )
+
+    def resolve_date(self, parsed_data: dict) -> datetime.date:
+        today = datetime.now().date()
+
+        if parsed_data.get("date"):
+            return datetime.fromisoformat(parsed_data["date"]).date()
+
+        weekday_map = {"пн": 0, "вт": 1, "ср": 2, "чт": 3, "пт": 4, "сб": 5, "вс": 6}
+
+        if parsed_data.get("weekday"):
+            target_weekday = weekday_map[parsed_data["weekday"].lower()]
+            days_ahead = (target_weekday - today.weekday() + 7) % 7
+            if days_ahead == 0:
+                days_ahead = 7
+            return today + timedelta(days=days_ahead)
+
+        if parsed_data.get("is_today"):
+            return today
+        if parsed_data.get("is_tomorrow"):
+            return today + timedelta(days=1)
+        if parsed_data.get("is_after_tomorrow"):
+            return today + timedelta(days=2)
+
+        return today
+
+    def parse_time_to_datetime(self, date: datetime.date, time_str: str) -> datetime:
+        hour, minute = map(int, time_str.split(":"))
+        return datetime.combine(date, datetime.min.time()) + timedelta(hours=hour, minutes=minute)
+
+    def resolve_end_time(self, start_dt: datetime, end_str: str | None) -> datetime:
+        if end_str:
+            hour, minute = map(int, end_str.split(":"))
+            return start_dt.replace(hour=hour, minute=minute)
+        else:
+            return start_dt + timedelta(hours=1)
+
+    async def book_self_timeslot_by_text(
+            self,
+            text_message: str,
+            user_max_id: int
+    ) -> UUID:
+        parsed_data = await self._gigachat_client.parse_message(message=text_message)
+        if parsed_data is None:
+            raise TextParserError
+
+        date_slot = self.resolve_date(parsed_data)
+        start_dt = self.parse_time_to_datetime(date_slot, parsed_data["meet_start_at"])
+        end_dt = self.resolve_end_time(start_dt, parsed_data.get("meet_end_at"))
+
+        return await self.create_self_time_slot(
+            max_id=user_max_id,
+            meet_start_at=start_dt,
+            meet_end_at=end_dt,
+            title=parsed_data.get("title"),
+            description=parsed_data.get("description")
+        )
