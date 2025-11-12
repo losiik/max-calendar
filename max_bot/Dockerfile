@@ -1,10 +1,10 @@
 FROM python:3.12
 
-WORKDIR /bot
+WORKDIR /max_bot
 
-COPY . /bot
+COPY . /max_bot
 
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r max_bot/requirements.txt
 
-ENV PYTHONPATH=/bot
+ENV PYTHONPATH=/max_bot

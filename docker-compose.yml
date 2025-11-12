@@ -22,7 +22,7 @@ services:
     container_name: max-calendar-bot
     command: sh -c "sleep 10 && python -u max_bot/main.py"
     environment:
-      - PYTHONPATH=/bot
+      - PYTHONPATH=/max_bot
     env_file:
       - ./max_bot/.env
     restart: always
