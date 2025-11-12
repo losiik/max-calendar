@@ -65,6 +65,7 @@ interface GetSelfTimeSlot {
   id?: string;
   slot_id?: string;
   meet_start_at: number;
+  meeting_url: string;
   meet_end_at: number;
   title?: string | null;
   description?: string | null;
@@ -121,8 +122,8 @@ interface TokenOwnerResponse {
 
 }
 
-const getBrowserTimezoneHours = () => -new Date().getTimezoneOffset() / 60;
-
+export const getBrowserTimezoneHours = () => -new Date().getTimezoneOffset() / 60;
+export const getBrowserTimezoneLocation = () => new Date().toString().split('+')[1].split(' ')[1].replace(/(\(|,)/, '')
 const pad = (value: number) => String(value).padStart(2, "0");
 
 const formatDateTimeForApi = (iso: string): string => {
@@ -259,6 +260,7 @@ const convertSlotsToCalendarDay = (
           id: slotUuid,
           slotId: slotUuid,
           slot_id: serverSlotId,
+          meetingUrl: slot.meeting_url ?? null,
           title,
           description: slot.description ?? undefined,
           startsAt: startISO,
@@ -448,10 +450,10 @@ export const deleteOwnTimeSlot = async (slotId: string): Promise<void> => {
   await apiClient.delete(`/time_slots/self/${maxId}/${slotId}`);
 };
 
-export const ensureUserRegistered = async (): Promise<void> => {
-  if (useMocks) return;
+export const ensureUserRegistered = async (): Promise<boolean> => {
+  if (useMocks) return true;
   const maxId = getCurrentMaxId();
-  if (!maxId) return;
+  if (!maxId) return false;
 
   try {
     const user = getWebAppUser();
@@ -459,19 +461,21 @@ export const ensureUserRegistered = async (): Promise<void> => {
       max_id: maxId,
       name: user?.first_name ?? user?.username ?? "MAX user",
       username: user?.username ?? undefined,
-    });
+    })
+    return false;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (!error.response) {
         console.warn("User registration skipped (network/CORS issue).");
-        return;
+        return false;
       }
       if (error.response.status === 409) {
-        return;
+        return true;
       }
     }
     console.error("Failed to ensure user exists", error);
   }
+  return true;
 };
 
 
