@@ -197,7 +197,7 @@ const fetchSelfSlotsForDate = async (
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (!error.response || error.response.status === 404) {
-        console.warn("Self time slots request blocked (network/CORS).");
+        
         return [];
       }
     }
@@ -219,7 +219,7 @@ const fetchExternalSlotsForDate = async (
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (!error.response) {
-        console.warn("External time slots blocked (network/CORS).");
+        
         return [];
       }
       if (error.response.status === 404 || error.response.status === 409) {
@@ -457,23 +457,24 @@ export const ensureUserRegistered = async (): Promise<boolean> => {
 
   try {
     const user = getWebAppUser();
+
     await apiClient.put("/users/", {
       max_id: maxId,
-      name: user?.first_name ?? user?.username ?? "MAX user",
+      name: user?.first_name ?? user?.username ?? "Пользователь Max",
       username: user?.username ?? undefined,
     })
     return false;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (!error.response) {
-        console.warn("User registration skipped (network/CORS issue).");
+        
         return false;
       }
       if (error.response.status === 409) {
         return true;
       }
     }
-    console.error("Failed to ensure user exists", error);
+    
   }
   return true;
 };
@@ -501,14 +502,14 @@ export const getNameByToken = async (
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (!error.response) {
-        console.warn("Owner name request skipped (network/CORS issue).");
+        
         return null;
       }
       if (error.response.status === 404 || error.response.status === 409) {
         return null;
       }
     }
-    console.error("Failed to fetch user by token", error);
+    
     return null;
   }
 };
@@ -530,7 +531,7 @@ export const fetchSettings = async (): Promise<SettingsResponse | null> => {
         return null;
       }
       if (!error.response) {
-        console.warn("Settings request skipped (network/CORS issue).");
+        
         return null;
       }
     }

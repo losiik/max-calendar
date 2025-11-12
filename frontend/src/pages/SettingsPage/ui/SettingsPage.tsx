@@ -95,19 +95,19 @@ function SettingsPage() {
     hours: number | "",
     minutes: number | ""
   ): string => {
-    if (hours === "" && minutes === "") return "Не задано";
+    if (hours === "" && minutes === "") return "";
     const pad = (value: number | "") =>
       value === "" ? "00" : String(value).padStart(2, "0");
     return `${pad(hours)}:${pad(minutes)}`;
   };
 
   const workingHoursLabel = useMemo(() => {
-    const fromLabel = formatRange(fromHours, fromMinutes);
-    const toLabel = formatRange(toHours, toMinutes);
-    if (fromLabel === "Не задано" && toLabel === "Не задано") {
-      return "Не задано";
+    const fromLabel = 'C ' + formatRange(fromHours, fromMinutes);
+    const toLabel = 'по ' + formatRange(toHours, toMinutes);
+    if (fromLabel === "C " && toLabel === "по ") {
+      return 'Выкл';
     }
-    return `С ${fromLabel} по ${toLabel}`;
+    return `${fromLabel} ${toLabel}`;
   }, [fromHours, fromMinutes, toHours, toMinutes]);
 
   const agendaLabel = formatRange(agendaTimeHours, agendaTimeMinutes);
@@ -179,7 +179,7 @@ function SettingsPage() {
         header={<CellHeader>Часовой пояс</CellHeader>}
       >
        <CellSimple
-          height="compact"
+           height="compact"
           title="Ваш часовой пояс"
           after={`${getBrowserTimezoneLocation()} ${getBrowserTimezoneHours()} UTC`}
         />
@@ -196,7 +196,7 @@ function SettingsPage() {
 
 
         <CellSimple
-          height="compact"
+       
           before={<MdWorkHistory size={20} />}
           onClick={() => open({ content: WorkingHoursContent })}
           showChevron
@@ -205,7 +205,7 @@ function SettingsPage() {
         />
 
         <CellSimple
-          height="compact"
+       
           before={<MdDateRange size={20} />}
 
           onClick={() => open({ content: WorkingDaysContent })}
@@ -221,7 +221,7 @@ function SettingsPage() {
 
         <CellSimple
           before={<MdAccessTime size={20} />}
-          height="compact"
+       
           onClick={() => open({ content: MeetingPeriodContent })}
           showChevron
           title="Периоды встреч"
@@ -237,7 +237,7 @@ function SettingsPage() {
         <CellSimple
           before={<MdNotificationsActive size={20} />}
 
-          height="compact"
+       
           onClick={() => open({ content: NotificationContent })}
           showChevron
           title="Уведомлять за"
@@ -251,7 +251,7 @@ function SettingsPage() {
 
         <CellSimple
           before={<MdOutlineViewAgenda size={20} />}
-          height="compact"
+       
           onClick={() => open({ content: AgendaContent })}
           showChevron
           title="Расписание на день"

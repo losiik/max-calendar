@@ -7,8 +7,15 @@ export const toTimeParts = (
     return { hours: "", minutes: "" };
   }
   const [hoursStr, rawMinutes = ""] = value.toString().split(".");
-  const hours = Number(hoursStr);
-  const minutes = Number(rawMinutes.padEnd(2, "0").slice(0, 2));
+  let hours = Number(hoursStr);
+  let minutes = Number(rawMinutes.padEnd(2, "0").slice(0, 2));
+  if (hours > 23) {
+    hours = hours % 24
+  }
+  if (minutes > 59) {
+    hours += Math.floor(minutes / 60);
+    minutes = minutes % 60;
+  }
   return {
     hours: Number.isNaN(hours) ? "" : hours,
     minutes: Number.isNaN(minutes) ? "" : minutes,

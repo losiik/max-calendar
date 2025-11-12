@@ -119,20 +119,7 @@ export function EventForm({
         </div>
       </div>
 
-      {/* <div className="flex flex-col gap-1">
-        <Typography.Label>Напомнить за (мин)</Typography.Label>
-        <Input
-          type="number"
-          min={0}
-          step={5}
-          value={reminderMinutes}
-          onChange={(e) =>
-            setReminderMinutes(
-              e.target.value === "" ? "" : Number(e.target.value)
-            )
-          }
-        />
-      </div> */}
+    
 
       {(errorMessage || externalError) && (
         <Typography.Body variant="small" className="text-red-500">
@@ -152,6 +139,7 @@ export function EventForm({
           </Button>
         )}
         <Button
+          data-haptic="success"
           mode="primary"
           appearance="neutral-themed"
           type="submit"

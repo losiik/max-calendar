@@ -8,6 +8,16 @@ Max Calendar - решение, которое соединяет личный к
 
 Пользователь взаимодействует с фронтом или через WebApp (открывается прямо из MAX) или через ссылку из бота. Фронт обращается к REST ручкам вида `/api/v1/*`, backend обрабатывает запросы, сохраняет данные в Postgres и, при необходимости, обращается к внешним API (например, Salute Jazz). Бот регистрирует пользователя и выдаёт ссылку на гостевой календарь. Cron сервис дергает backend, чтобы тот отправил напоминания. Архитектура backend построена слоями API - Facade - Service - Repository, что позволяет переиспользовать доменную логику между HTTP, ботом и cron.
 
+### Backend архитектура
+- FastAPI + async SQLAlchemy поверх PostgreSQL 16, миграции выполняются yoyo, а `database.py` даёт общее подключение и middleware для сессий.
+- Слои `api` → `facade` → `services` → `repository` разделяют транспорт, координацию и работу с БД; сигналы (`signals.py`) позволяют реагировать на события (регистрация пользователя, создание слота) и переиспользовать сценарии cron/бота без дублирования.
+- Интеграции с внешними системами вынесены в `client/` (например, Salute Jazz), а в `backend/README.md` описаны все зависимости (`requirements.txt`) и детальная схема.
+
+### Frontend архитектура
+- React + TypeScript + Vite, структура feature-sliced: `entities` (типизация и API), `features` (сценарии вроде бронирования и управления доступностью), `widgets`, `pages`, `providers`, `shared`.
+- Zustand хранит локальные состояния, TanStack Query управляет запросами и кэшом, Tailwind и Max UI отвечают за визуал. `shared/lib/max-web-app.ts` инкапсулирует Telegram MAX WebApp (initData, haptics, закрытие), поэтому фронт безопасно работает внутри мессенджера.
+- Детали запуска, переменные окружения и скрипты описаны в `frontend/README.md`.
+
 ## Docker и оркестрация
 
 `docker-compose.yml` описывает четыре сервиса и Postgres:
@@ -29,9 +39,10 @@ MAX_API_KEY - токен бота, нужен для интеграции с MAX
 SBER_API_KEY - ключ для Salute Jazz.  
 PORT - опциональный порт FastAPI (по умолчанию 9000).
 
-Frontend (`frontend/.env.local` или любой env для Vite):  
-VITE_API_BASE_URL - адрес backend, обычно https://<домен>/api/v1.  
-VITE_MAX_USER_ID - опциональная заглушка для запуска вне Telegram.
+Frontend (`frontend/.env.developmenе` или любой env для Vite):  
+VITE_API_BASE_URL - адрес backend, обычно https://<домен>/api/v1. (string) 
+VITE_MAX_USER_ID - опциональная заглушка для запуска вне Max (number).
+VITE_USE_MOCKS - использовать заглушки вместо запросов к бекенду (true/false).
 
 Bot (`max_bot/.env`):  
 MAX_API_KEY - токен MAX.  
@@ -43,8 +54,6 @@ BACKEND_URL - полный URL до `/api/v1/reminder/`.
 
 ## Makefile
 
-В корне определено несколько целей:
-
 - `make up` - поднять compose в фоне.  
 - `make build` - пересобрать образы и запустить.  
 - `make down` - остановить и удалить контейнеры.  
@@ -52,7 +61,7 @@ BACKEND_URL - полный URL до `/api/v1/reminder/`.
 - `make logs` - посмотреть логи всех сервисов.  
 - `make ps` - вывести состояние контейнеров.  
 
-## Локальный запуск через Docker (В ПРОДЕ НЕ БУДЕТ РАБОТАТЬ, все на сервере)
+## Локальный запуск через Docker (В ПРОДЕ НЕ БУДЕТ РАБОТАТЬ, так как сейчас все задеплоено на сервере)
 
 1. Создайте файлы `.env` в `backend`, `max_bot`, `cron_job` с переменными из раздела выше.  
 2. Заполните `postgres` значения в `docker-compose.yml`.  
