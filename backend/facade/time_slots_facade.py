@@ -374,8 +374,8 @@ class TimeSlotsFacade:
             )
 
         all_owner_slots = self.generate_daily_time_slots(
-            work_time_start=owner_settings.work_time_start,
-            work_time_end=owner_settings.work_time_end,
+            work_time_start=invited_settings.work_time_start,
+            work_time_end=invited_settings.work_time_end,
             duration_minutes=owner_settings.duration_minutes
         )
 
