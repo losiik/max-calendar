@@ -374,8 +374,8 @@ class TimeSlotsFacade:
             )
 
         all_owner_slots = self.generate_daily_time_slots(
-            work_time_start=owner_settings.work_time_start - (owner_settings.timezone - invited_settings.timezone),
-            work_time_end=owner_settings.work_time_end - (owner_settings.timezone - invited_settings.timezone),
+            work_time_start=owner_settings.work_time_start,
+            work_time_end=owner_settings.work_time_end,
             duration_minutes=owner_settings.duration_minutes
         )
 
@@ -384,6 +384,10 @@ class TimeSlotsFacade:
             owner_booked_slots=owner_booked_slots,
             invited_booked_slots=invited_booked_slots
         )
+
+        for slot in available_external_slots:
+            slot.meet_start_at -= owner_settings.timezone - invited_settings.timezone
+            slot.meet_end_at -= owner_settings.timezone - invited_settings.timezone
 
         return available_external_slots
 
