@@ -79,6 +79,7 @@ class TimeSlotsFacade:
             description: Optional[str] = None
     ) -> UUID:
         invited_user = await self._user_service.find_by_max_id(max_id=invited_max_id)
+        invited_settings = await self._settings_service.get_settings(user_id=invited_user.id)
         if invited_user is None:
             raise UserDoesNotExistsError
 
@@ -90,8 +91,8 @@ class TimeSlotsFacade:
         owner_user = await self._user_service.get_by_user_id(user_id=share_data.owner_id)
         owner_settings = await self._settings_service.get_settings(user_id=owner_user.id)
 
-        utc_meet_start_at = self.to_utc_naive(dt=meet_start_at, tz_offset_hours=owner_settings.timezone)
-        utc_meet_end_at = self.to_utc_naive(dt=meet_end_at, tz_offset_hours=owner_settings.timezone)
+        utc_meet_start_at = self.to_utc_naive(dt=meet_start_at, tz_offset_hours=invited_settings.timezone)
+        utc_meet_end_at = self.to_utc_naive(dt=meet_end_at, tz_offset_hours=invited_settings.timezone)
 
         time_slot = await self._time_slots_service.create_time_slot(
             owner_id=owner_user.id,
