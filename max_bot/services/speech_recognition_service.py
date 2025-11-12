@@ -2,12 +2,15 @@ import json
 import wave
 import soundfile
 import logging
+import os
 
 from vosk import Model, KaldiRecognizer
 
 
 class SpeechRecognitionService:
     def __init__(self):
+        current_file_path = os.path.abspath(__file__)
+        print(current_file_path)
         model_path = './vosk-model-small-ru-0.22'
         self.model = Model(model_path)
 
