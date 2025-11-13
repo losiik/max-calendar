@@ -32,7 +32,7 @@ def job_daily_reminder():
     response = requests.post(url)
 
     if response.status_code == 200:
-        logging.info(f"Уведомления отправлены успешно: {response.json()}")
+        logging.info(f"Дневные уведомления отправлены успешно: {response.json()}")
     else:
         logging.error(f"Ошибка при выполнении запроса: {response.status_code}")
 
