@@ -7,5 +7,4 @@ CREATE TABLE IF NOT EXISTS public.daily_alert (
         REFERENCES public."user"(id) ON DELETE CASCADE,
     CONSTRAINT time_slot_alert_time_slot_id_fkey FOREIGN KEY (time_slot_id)
         REFERENCES public.time_slots(id) ON DELETE CASCADE,
-    CONSTRAINT time_slot_alert_unique UNIQUE (user_id, time_slot_id)
 );
