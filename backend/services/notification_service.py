@@ -260,8 +260,8 @@ class NotificationService:
                 tz_offset_hours=slot.user_timezone
             )
 
-            meet_start_at = meet_start_at.strftime("%d.%m.%Y %H:%M")
-            meet_end_at = meet_end_at.strftime("%d.%m.%Y %H:%M")
+            meet_start_at = meet_start_at.strftime("%H:%M")
+            meet_end_at = meet_end_at.strftime("%H:%M")
 
             message += f"""🕕\nНазвание: {slot.title}
 Дата: c {meet_start_at} по {meet_end_at}
