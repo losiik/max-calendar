@@ -106,7 +106,7 @@ class GigachatClient:
 
             except json.JSONDecodeError:
                 if attempt < self.max_retries:
-                    logging.info(f"⚠️ Ошибка парсинга JSON, попытка {attempt}/{self.max_retries}... повтор через {delay}s")
+                    logging.info(f"⚠️ Ошибка парсинга JSON, попытка {attempt}/{self.max_retries}... повтор через {self.delay}s")
                     await asyncio.sleep(self.delay)
                 else:
                     logging.info("❌ Не удалось получить корректный JSON после 3 попыток.")
