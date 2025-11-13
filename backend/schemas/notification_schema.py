@@ -1,5 +1,5 @@
 from uuid import UUID
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 from pydantic import BaseModel
@@ -47,3 +47,7 @@ class SelfBookingNotification(BaseModel):
     title: str
     user_max_id: int
     user_timezone: int
+
+
+class DailyReminderNotification(BaseModel):
+    slot_list: List[MeetAlertNotification]

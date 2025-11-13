@@ -21,7 +21,8 @@ from backend.schemas.notification_schema import (
     Notification,
     ConfirmTimeSlotNotification,
     MeetAlertNotification,
-    SelfBookingNotification
+    SelfBookingNotification,
+    DailyReminderNotification
 )
 from backend.schemas.time_slots_schema import (
     SelfTimeSlotsGetResponse,
@@ -35,7 +36,8 @@ from backend.signals import (
     new_slot_signal,
     alert_before_meet_signal,
     confirm_time_slot_signal,
-    self_booking_signal
+    self_booking_signal,
+    daily_reminder_signal
 )
 
 
@@ -478,7 +480,6 @@ class TimeSlotsFacade:
     def is_time_to_alert(self, meet_start_at: datetime, alert_offset_minutes: int) -> bool:
         now = datetime.now(timezone.utc).replace(tzinfo=None)
 
-        # Приводим meet_start_at к UTC
         if meet_start_at.tzinfo is None:
             meet_start_at = meet_start_at.replace()
         else:
@@ -616,3 +617,39 @@ class TimeSlotsFacade:
             title=parsed_data.get("title"),
             description=parsed_data.get("description")
         )
+
+    async def daily_reminder(self):
+        settings_list = await self._settings_service.get_users_with_current_reminder_time()
+
+        for settings in settings_list:
+            slot_list = []
+
+            booked_slots = await self._time_slots_service.get_time_self_slots(
+                user_id=settings.user_id,
+                target_date=datetime.now().date()
+            )
+
+            unique_slots = {slot.id: slot for slot in booked_slots}.values()
+            unique_slots = list(unique_slots)
+
+            for slot in unique_slots:
+                invited_user = await self._user_service.get_by_user_id(user_id=slot.invited_id)
+                owner_user = await self._user_service.get_by_user_id(user_id=settings.user_id)
+                slot_list.append(
+                    MeetAlertNotification(
+                        meet_start_at=slot.meet_start_at,
+                        meet_end_at=slot.meet_end_at,
+                        title=slot.title,
+                        invite_use_name=invited_user.name,
+                        user_max_id=owner_user.max_id,
+                        user_timezone=settings.timezone,
+                        meeting_url=slot.meeting_url,
+                        alert_offset_minutes=settings.alert_offset_minutes
+                    )
+                )
+
+            await daily_reminder_signal.send_async(
+                DailyReminderNotification(
+                    slot_list=slot_list
+                )
+            )

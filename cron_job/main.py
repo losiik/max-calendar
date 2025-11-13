@@ -18,7 +18,7 @@ logging.basicConfig(
 
 
 def job_send_reminder():
-    url = settings.reminder_url
+    url = settings.reminder_alert_url
     response = requests.post(url)
 
     if response.status_code == 200:
@@ -27,7 +27,18 @@ def job_send_reminder():
         logging.error(f"Ошибка при выполнении запроса: {response.status_code}")
 
 
+def job_daily_reminder():
+    url = settings.reminder_daily_url
+    response = requests.post(url)
+
+    if response.status_code == 200:
+        logging.info(f"Дневные уведомления отправлены успешно: {response.json()}")
+    else:
+        logging.error(f"Ошибка при выполнении запроса: {response.status_code}")
+
+
 schedule.every(1).minutes.do(job_send_reminder)
+schedule.every(1).minutes.do(job_daily_reminder)
 
 while True:
     schedule.run_pending()
