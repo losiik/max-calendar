@@ -13,7 +13,7 @@ class GigachatClient:
         self,
         settings: Settings,
         scope: str = "GIGACHAT_API_PERS",
-        model: str = "GigaChat"
+        model: str = "GigaChat-2-Max"
     ):
         self.giga = GigaChatAsyncClient(
             credentials=settings.gigachat_api_key,
