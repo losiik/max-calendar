@@ -66,7 +66,7 @@ class TimeSlotService:
             logging.error(response[1])
             return "Что-то пошло не так"
 
-        message = self.__construct_daly_timetable_message(data=response[0])
+        message = self._construct_daly_timetable_message(data=response[0])
 
         if message == "":
             return "На сегодня нет запланированных событий"
