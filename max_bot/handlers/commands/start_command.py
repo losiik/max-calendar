@@ -40,15 +40,14 @@ async def command_start(
         user_service: UserService = get_user_service()
 ):
     await user_service.create_user(
-        max_id=event.from_user.user_id,
-        username=event.from_user.username,
-        name=f"{event.from_user.first_name} {event.from_user.last_name}"
+        max_id=event.message.sender.user_id,
+        username=event.message.sender.username,
+        name=f"{event.message.sender.first_name} {event.message.sender.last_name}"
     )
 
     payload = get_calendar_kb().pack()
 
-    await event.bot.send_message(
-        chat_id=event.chat_id,
+    await event.message.answer(
         text=f"""📅 Планируйте встречи, управляйте расписанием и делитесь доступностью без лишних согласований.
 🕓 Гибко задавайте рабочие дни, часы и длительность слотов.
 🔗 Делитесь календарём и принимайте бронирования в один клик.
