@@ -39,7 +39,7 @@ class TimeSlotService:
             meet_start_at = self.format_time(slot['meet_start_at'])
             meet_end_at = self.format_time(slot['meet_end_at'])
 
-            message += f"""Название: {slot['title']}
+            message += f"""🕕\nНазвание: {slot['title']}
 Дата: c {meet_start_at} по {meet_end_at}
 """
             if slot.get('description', None):
