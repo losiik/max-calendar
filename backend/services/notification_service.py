@@ -11,13 +11,15 @@ from backend.schemas.notification_schema import (
     Notification,
     ConfirmTimeSlotNotification,
     MeetAlertNotification,
-    SelfBookingNotification
+    SelfBookingNotification,
+    DailyReminderNotification
 )
 from backend.signals import (
     confirm_time_slot_signal,
     new_slot_signal,
     alert_before_meet_signal,
-    self_booking_signal
+    self_booking_signal,
+    daily_reminder_signal
 )
 
 
@@ -33,11 +35,15 @@ class NotificationService:
         confirm_time_slot_signal.connect(self._handle_confirm_time_slot)
         alert_before_meet_signal.connect(self._handle_alert_meet)
         self_booking_signal.connect(self._handel_self_booking)
+        daily_reminder_signal.connect(self._handel_daily_reminder)
 
     def from_utc_naive(self, dt_utc: datetime, tz_offset_hours: int) -> datetime:
         dt_utc = dt_utc.replace(tzinfo=timezone.utc)
         local_time = dt_utc.astimezone(timezone(timedelta(hours=tz_offset_hours)))
         return local_time.replace(tzinfo=None)
+
+    async def _handel_daily_reminder(self, notification_data: DailyReminderNotification):
+        asyncio.create_task()
 
     async def _handel_self_booking(self, notification_data: SelfBookingNotification):
         asyncio.create_task(self.self_booking_notification(notification_data=notification_data))
@@ -239,3 +245,40 @@ class NotificationService:
             user_id=notification_data.user_max_id,
             text=message
         )
+
+    def daily_reminder_message_builder(self, notification_data: DailyReminderNotification) -> str:
+        message = ""
+
+        for slot in notification_data.slot_list:
+            meet_start_at = self.from_utc_naive(
+                dt_utc=slot.meet_start_at,
+                tz_offset_hours=slot.user_timezone
+            )
+
+            meet_end_at = self.from_utc_naive(
+                dt_utc=slot.meet_end_at,
+                tz_offset_hours=slot.user_timezone
+            )
+
+            meet_start_at = meet_start_at.strftime("%d.%m.%Y %H:%M")
+            meet_end_at = meet_end_at.strftime("%d.%m.%Y %H:%M")
+
+            message += f"""🕕\nНазвание: {slot.title}
+            Дата: c {meet_start_at} по {meet_end_at}
+            """
+            if slot.meeting_url is not None:
+                message += f"Ссылка на встречу: {slot.meeting_url}"
+
+            message += "\n\n"
+
+        if message != "":
+            message = "📆 Сегодняшние встречи:\n\n" + message
+        return message
+
+    async def send_daily_reminder_notification(self, notification_data: DailyReminderNotification):
+        message = self.daily_reminder_message_builder(notification_data=notification_data)
+        await self._bot.send_message(
+            user_id=notification_data.user_max_id,
+            text=message
+        )
+

@@ -1,7 +1,7 @@
 import asyncio
 from datetime import datetime
 from uuid import UUID
-from typing import Optional, Any
+from typing import Optional, Any, List
 
 from backend.models.models import Settings
 from backend.repository.settings_repository import SettingsRepository
@@ -136,3 +136,6 @@ class SettingsService:
     async def get_settings(self, user_id: UUID) -> SettingsModelPydantic:
         settings = await self._settings_repository.find_by_user_id(user_id=user_id)
         return settings
+
+    async def get_users_with_current_reminder_time(self) -> List[SettingsModelPydantic]:
+        return await self._settings_repository.find_users_with_current_reminder_time()
