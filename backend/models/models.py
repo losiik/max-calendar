@@ -72,3 +72,12 @@ class TimeSlotAlert(Base):
     user_id = Column(UUID, ForeignKey('user.id', ondelete='CASCADE'))
     time_slot_id = Column(UUID, ForeignKey('time_slots.id', ondelete='CASCADE'))
     sent_at = Column(DateTime, nullable=False)
+
+
+class DailyAlert(Base):
+    __tablename__ = "daily_alert"
+
+    id = Column(UUID, primary_key=True)
+    user_id = Column(UUID, ForeignKey('user.id', ondelete='CASCADE'))
+    time_slot_id = Column(UUID, ForeignKey('time_slots.id', ondelete='CASCADE'))
+    sent_at = Column(DateTime, nullable=False)

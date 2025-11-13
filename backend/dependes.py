@@ -5,6 +5,7 @@ from backend.repository.settings_repository import SettingsRepository
 from backend.repository.time_slots_repository import TimeSlotsRepository
 from backend.repository.share_repository import ShareRepository
 from backend.repository.time_slot_alert_repository import TimeSlotAlertRepository
+from backend.repository.daily_alert_repository import DailyAlertRepository
 
 from backend.services.user_service import UserService
 from backend.services.settings_service import SettingsService
@@ -12,6 +13,7 @@ from backend.services.time_slots_service import TimeSlotsService
 from backend.services.share_service import ShareService
 from backend.services.notification_service import NotificationService
 from backend.services.time_slot_alert_service import TimeSlotAlertService
+from backend.services.daily_alert_service import DailyAlertService
 
 from backend.facade.settings_facade import SettingsFacade
 from backend.facade.share_facade import ShareFacade
@@ -82,6 +84,13 @@ def get_time_slot_alert_repository() -> TimeSlotAlertRepository:
     return _time_slot_alert_repository
 
 
+_daily_alert_repository = DailyAlertRepository()
+
+
+def get_daily_alert_repository() -> DailyAlertRepository:
+    return _daily_alert_repository
+
+
 #######################
 #       Services      #
 #######################
@@ -138,6 +147,16 @@ _time_slot_alert_service = TimeSlotAlertService(
 
 def get_time_slot_alert_service() -> TimeSlotAlertService:
     return _time_slot_alert_service
+
+
+_daily_alert_service = DailyAlertService(
+    daily_alert_repository=get_daily_alert_repository()
+)
+
+
+def get_daily_alert_service() -> DailyAlertService:
+    return _daily_alert_service
+
 
 #######################
 #       Facade        #
