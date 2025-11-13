@@ -25,14 +25,19 @@ class TimeSlotService:
             return None
         return new_user[0]
 
-    def __construct_daly_timetable_message(
+    def format_time(self, time_float: float) -> str:
+        hours = int(time_float)
+        minutes = int(round((time_float - hours) * 100))
+        return f"{hours:02d}:{minutes:02d}"
+
+    def _construct_daly_timetable_message(
             self,
             data: dict[str, Any]
     ) -> str:
         message = ""
         for slot in data['time_slots']:
-            meet_start_at = str(slot['meet_start_at']).replace('.', ':')
-            meet_end_at = str(slot['meet_end_at']).replace('.', ':')
+            meet_start_at = self.format_time(slot['meet_start_at'])
+            meet_end_at = self.format_time(slot['meet_end_at'])
 
             message += f"""Название: {slot['title']}
 Дата: c {meet_start_at} по {meet_end_at}
