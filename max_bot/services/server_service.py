@@ -53,4 +53,9 @@ class ServerService:
             }
             url = f"{self.base_url_api}api/v1/time_slots/self/by_text/"
             async with session.post(url, json=data) as r:
-                return await r.json(), r.status
+                try:
+                    response = (await r.json(), r.status)
+                except:
+                    response = ({}, r.status)
+
+        return response
