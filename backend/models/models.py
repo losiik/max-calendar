@@ -81,3 +81,11 @@ class DailyAlert(Base):
     user_id = Column(UUID, ForeignKey('user.id', ondelete='CASCADE'))
     time_slot_id = Column(UUID, ForeignKey('time_slots.id', ondelete='CASCADE'))
     sent_at = Column(DateTime, nullable=False)
+
+
+class Onboarding(Base):
+    __tablename__ = "onboarding"
+
+    id = Column(UUID, primary_key=True)
+    user_id = Column(UUID, ForeignKey('user.id', ondelete='CASCADE'))
+    created_at = Column(DateTime, nullable=False)
