@@ -10,6 +10,7 @@ from backend.services.time_slots_service import TimeSlotsService
 from backend.services.share_service import ShareService
 from backend.services.settings_service import SettingsService
 from backend.services.time_slot_alert_service import TimeSlotAlertService
+from backend.services.daily_alert_service import DailyAlertService
 from backend.exceptions import (
     UserDoesNotExistsError,
     ShareTokenDoesNotExistsError,
@@ -50,7 +51,8 @@ class TimeSlotsFacade:
             settings_service: SettingsService,
             sber_jazz_client: SberJazzClient,
             time_slot_alert_service: TimeSlotAlertService,
-            gigachat_client: GigachatClient
+            gigachat_client: GigachatClient,
+            daily_alert_service: DailyAlertService
     ):
         self._user_service = user_service
         self._time_slots_service = time_slots_service
@@ -59,6 +61,7 @@ class TimeSlotsFacade:
         self._sber_jazz_client = sber_jazz_client
         self._time_slot_alert_service = time_slot_alert_service
         self._gigachat_client = gigachat_client
+        self._daily_alert_service = daily_alert_service
 
     def to_utc_naive(self, dt: datetime, tz_offset_hours: int) -> datetime:
         if dt.tzinfo is None:
@@ -401,7 +404,11 @@ class TimeSlotsFacade:
 
         filtered_slots = []
         for slot in available_external_slots:
-            if invited_settings.work_time_start <= slot.meet_start_at < invited_settings.work_time_end and invited_settings.work_time_start < slot.meet_end_at <= invited_settings.work_time_end:
+            if (
+                    invited_settings.work_time_start <= slot.meet_start_at < invited_settings.work_time_end
+                    and
+                    invited_settings.work_time_start < slot.meet_end_at <= invited_settings.work_time_end
+            ):
                 filtered_slots.append(slot)
 
         return filtered_slots
@@ -633,20 +640,28 @@ class TimeSlotsFacade:
             unique_slots = list(unique_slots)
 
             for slot in unique_slots:
-                invited_user = await self._user_service.get_by_user_id(user_id=slot.invited_id)
-                owner_user = await self._user_service.get_by_user_id(user_id=settings.user_id)
-                slot_list.append(
-                    MeetAlertNotification(
-                        meet_start_at=slot.meet_start_at,
-                        meet_end_at=slot.meet_end_at,
-                        title=slot.title,
-                        invite_use_name=invited_user.name,
-                        user_max_id=owner_user.max_id,
-                        user_timezone=settings.timezone,
-                        meeting_url=slot.meeting_url,
-                        alert_offset_minutes=settings.alert_offset_minutes
+                if await self._daily_alert_service.get_by_user_id_and_time_slot_id(
+                        user_id=settings.user_id,
+                        time_slot_id=slot.id
+                ) is None:
+                    invited_user = await self._user_service.get_by_user_id(user_id=slot.invited_id)
+                    owner_user = await self._user_service.get_by_user_id(user_id=settings.user_id)
+                    slot_list.append(
+                        MeetAlertNotification(
+                            meet_start_at=slot.meet_start_at,
+                            meet_end_at=slot.meet_end_at,
+                            title=slot.title,
+                            invite_use_name=invited_user.name,
+                            user_max_id=owner_user.max_id,
+                            user_timezone=settings.timezone,
+                            meeting_url=slot.meeting_url,
+                            alert_offset_minutes=settings.alert_offset_minutes
+                        )
                     )
-                )
+                    await self._daily_alert_service.create_alert(
+                        user_id=settings.user_id,
+                        time_slot_id=slot.id
+                    )
 
             await daily_reminder_signal.send_async(
                 DailyReminderNotification(
