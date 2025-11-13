@@ -36,7 +36,7 @@ app.add_middleware(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://aeroserg.github.io/",
+        "https://aeroserg.github.io",
         "http://localhost:9000",
         "http://bot",
     ],
