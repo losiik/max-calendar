@@ -264,7 +264,8 @@ class NotificationService:
             meet_end_at = meet_end_at.strftime("%d.%m.%Y %H:%M")
 
             message += f"""🕕\nНазвание: {slot.title}
-            Дата: c {meet_start_at} по {meet_end_at}
+Дата: c {meet_start_at} по {meet_end_at}
+Встреча с: {slot.invite_use_name}
             """
             if slot.meeting_url is not None:
                 message += f"Ссылка на встречу: {slot.meeting_url}"
@@ -277,8 +278,9 @@ class NotificationService:
 
     async def send_daily_reminder_notification(self, notification_data: DailyReminderNotification):
         message = self.daily_reminder_message_builder(notification_data=notification_data)
+        max_id = notification_data.slot_list[0].user_max_id
         await self._bot.send_message(
-            user_id=notification_data.user_max_id,
+            user_id=max_id,
             text=message
         )
 

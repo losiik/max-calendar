@@ -19,4 +19,4 @@ async def check_reminder(
 async def daily_reminder(
         time_slots_facade: TimeSlotsFacade = Depends(get_time_slots_facade)
 ):
-    await time_slots_facade.check_reminders()
+    await time_slots_facade.daily_reminder()
