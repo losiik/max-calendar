@@ -6,6 +6,7 @@ from backend.repository.time_slots_repository import TimeSlotsRepository
 from backend.repository.share_repository import ShareRepository
 from backend.repository.time_slot_alert_repository import TimeSlotAlertRepository
 from backend.repository.daily_alert_repository import DailyAlertRepository
+from backend.repository.onboarding_repository import OnboardingRepository
 
 from backend.services.user_service import UserService
 from backend.services.settings_service import SettingsService
@@ -14,10 +15,12 @@ from backend.services.share_service import ShareService
 from backend.services.notification_service import NotificationService
 from backend.services.time_slot_alert_service import TimeSlotAlertService
 from backend.services.daily_alert_service import DailyAlertService
+from backend.services.onboarding_service import OnboardingService
 
 from backend.facade.settings_facade import SettingsFacade
 from backend.facade.share_facade import ShareFacade
 from backend.facade.time_slots_facade import TimeSlotsFacade
+from backend.facade.onboarding_facade import OnboardingFacade
 
 from backend.client.sber_jazz_client import SberJazzClient
 from backend.client.gigachat_client import GigachatClient
@@ -91,6 +94,13 @@ def get_daily_alert_repository() -> DailyAlertRepository:
     return _daily_alert_repository
 
 
+_onboarding_repository = OnboardingRepository()
+
+
+def get_onboarding_repository() -> OnboardingRepository:
+    return _onboarding_repository
+
+
 #######################
 #       Services      #
 #######################
@@ -158,6 +168,15 @@ def get_daily_alert_service() -> DailyAlertService:
     return _daily_alert_service
 
 
+_onboarding_service = OnboardingService(
+    onboarding_repository=get_onboarding_repository()
+)
+
+
+def get_onboarding_service() -> OnboardingService:
+    return _onboarding_service
+
+
 #######################
 #       Facade        #
 #######################
@@ -197,3 +216,13 @@ _time_slots_facade = TimeSlotsFacade(
 
 def get_time_slots_facade() -> TimeSlotsFacade:
     return _time_slots_facade
+
+
+_onboarding_facade = OnboardingFacade(
+    onboarding_service=get_onboarding_service(),
+    user_service=get_user_service()
+)
+
+
+def get_onboarding_facade() -> OnboardingFacade:
+    return _onboarding_facade
