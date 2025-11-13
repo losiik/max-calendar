@@ -43,7 +43,7 @@ class NotificationService:
         return local_time.replace(tzinfo=None)
 
     async def _handel_daily_reminder(self, notification_data: DailyReminderNotification):
-        asyncio.create_task()
+        asyncio.create_task(self.send_daily_reminder_notification(notification_data=notification_data))
 
     async def _handel_self_booking(self, notification_data: SelfBookingNotification):
         asyncio.create_task(self.self_booking_notification(notification_data=notification_data))
