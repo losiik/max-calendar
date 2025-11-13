@@ -190,7 +190,8 @@ _time_slots_facade = TimeSlotsFacade(
     settings_service=get_settings_service(),
     sber_jazz_client=get_sber_jazz_client(),
     time_slot_alert_service=get_time_slot_alert_service(),
-    gigachat_client=get_gigachat_client()
+    gigachat_client=get_gigachat_client(),
+    daily_alert_service=get_daily_alert_service()
 )
 
 
