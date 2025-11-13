@@ -81,7 +81,7 @@ class TimeSlotService:
         if response[1] == 409:
             logging.error(response[1])
             return "У вас уже забронирована встреча на это время"
-        elif response[1] >= 400:
+        elif response[1] != 200:
             return "Извините, не смог распознать текст"
 
         return None
