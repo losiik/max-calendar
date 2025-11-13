@@ -2,6 +2,8 @@ import os
 
 from pydantic_settings import BaseSettings
 
+from backend.enums.profile_enum import Profile
+
 
 class Settings(BaseSettings):
     port: int = 9000
@@ -25,6 +27,8 @@ class Settings(BaseSettings):
     # sber
     sber_api_key: str = os.getenv("SBER_API_KEY")
     gigachat_api_key: str = os.getenv("GIGACHAT_API_KEY")
+
+    profile: Profile = os.getenv("PROFILE")
 
 
 settings = Settings()

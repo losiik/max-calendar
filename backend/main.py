@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.settings.settings import settings
 from backend.api.routers import api_router
+from backend.enums.profile_enum import Profile
 
 from pathlib import Path
 
@@ -27,7 +28,10 @@ with backend.lock():
     backend.apply_migrations(backend.to_apply(migrations))
 
 
-app = FastAPI(openapi_prefix="/")
+if settings.profile == Profile.PROD:
+    app = FastAPI(openapi_prefix="/", docs_url=None, redoc_url=None, openapi_url=None)
+else:
+    app = FastAPI(openapi_prefix="/")
 
 # Middlewares
 app.add_middleware(
