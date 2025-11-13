@@ -100,3 +100,17 @@ class SberJazzClient:
                     raise RuntimeError(f"Ошибка при создании комнаты: {resp.status} {text}")
                 data = await resp.json()
                 return data.get("roomUrl", "")
+
+    async def get_meeting_summary(self, user_id: UUID, room_id: str) -> dict:
+        token = await self._get_transport_token(user_id)
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/json"
+        }
+
+        async with aiohttp.ClientSession(timeout=self.timeout) as session:
+            async with session.get(f"{self.BASE_URL}/room/{room_id}/summarizations", headers=headers) as resp:
+                if resp.status != 200:
+                    text = await resp.text()
+                    raise RuntimeError(f"Ошибка при получении саммари: {resp.status} {text}")
+                return await resp.json()
