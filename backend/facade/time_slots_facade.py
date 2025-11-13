@@ -345,6 +345,12 @@ class TimeSlotsFacade:
 
         invited_settings = await self._settings_service.get_settings(user_id=invited_user.id)
 
+        if not self.is_working_day(
+                target_date=target_date,
+                working_days_bitmask=invited_settings.working_days
+        ):
+            return []
+
         owner_booked_slots = await self._time_slots_service.get_time_self_slots(
             user_id=owner_user.id,
             target_date=target_date
