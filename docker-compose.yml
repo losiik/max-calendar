@@ -61,7 +61,7 @@ services:
       retries: 5
   frontend:
     build:
-      context: .
+      context: ./frontend
       dockerfile: frontend/Dockerfile
     container_name: max-calendar-frontend
     ports:

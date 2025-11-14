@@ -10,7 +10,7 @@
     "predeploy": "npm run build && cp dist/index.html dist/404.html",
     "deploy": "gh-pages -d dist -r git@github.com:aeroserg/max-calendar.git -b gh-pages",
     "preview": "vite preview",
-    "docker:build": "docker build -f Dockerfile -t max-calendar-frontend ."
+    "docker:build": "docker build -f Dockerfile -t max-calendar-frontend --build-arg APP_PATH=. ."
   },
   "dependencies": {
     "@maxhub/max-ui": "^0.1.12",

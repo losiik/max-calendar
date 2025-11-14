@@ -1,13 +1,14 @@
-# syntax=docker/dockerfile:1.7
 
+ARG APP_PATH=frontend
 
 FROM node:20.18-alpine3.20 AS build
+ARG APP_PATH
 WORKDIR /app
 
-COPY package*.json ./
+COPY ${APP_PATH}/package*.json ./
 RUN npm install --include=dev --ignore-scripts --legacy-peer-deps
 
-COPY . .
+COPY ${APP_PATH}/ ./
 RUN npm run build
 
 FROM node:20.18-alpine3.20 AS runner
