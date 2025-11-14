@@ -130,9 +130,10 @@ async function requestAuthToken(): Promise<boolean> {
   if (useMocks) return true;
   const initData = getWebApp()?.initData;
   if (!initData) {
-    console.warn("MAX initData не доступна");
+    console.warn("Max initData не доступна");
     return false;
   }
+  console.log(`[LOGGER] sending initData to /users/...`);
   try {
     const { data } = await apiClient.put<AuthResponse>("/users/", {
       init_data: initData,
@@ -151,10 +152,12 @@ async function requestAuthToken(): Promise<boolean> {
 
 export const ensureAuthToken = async (): Promise<boolean> => {
   if (useMocks) return true;
+  console.log(`[LOGGER] checking if there is need to update auth token...`);
   const needsUpdate = !initialAuthPerformed || !hasValidAuthToken();
   initialAuthPerformed = true;
   if (!needsUpdate) return true;
   if (!authPromise) {
+    console.log(`[LOGGER] requesting new auth token...`);
     authPromise = requestAuthToken().finally(() => {
       authPromise = null;
     });
