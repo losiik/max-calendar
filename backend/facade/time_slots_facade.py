@@ -77,13 +77,13 @@ class TimeSlotsFacade:
     async def create_time_slot(
             self,
             owner_token: str,
-            invited_max_id: int,
+            invited_user_id: UUID,
             meet_start_at: datetime,
             meet_end_at: datetime,
             title: Optional[str] = None,
             description: Optional[str] = None
     ) -> UUID:
-        invited_user = await self._user_service.find_by_max_id(max_id=invited_max_id)
+        invited_user = await self._user_service.get_by_user_id(user_id=invited_user_id)
         invited_settings = await self._settings_service.get_settings(user_id=invited_user.id)
         if invited_user is None:
             raise UserDoesNotExistsError
@@ -125,13 +125,13 @@ class TimeSlotsFacade:
 
     async def create_self_time_slot(
             self,
-            max_id: int,
+            user_id: UUID,
             meet_start_at: datetime,
             meet_end_at: datetime,
             title: Optional[str] = None,
             description: Optional[str] = None
     ) -> UUID:
-        user = await self._user_service.find_by_max_id(max_id=max_id)
+        user = await self._user_service.get_by_user_id(user_id=user_id)
         if user is None:
             raise UserDoesNotExistsError
 
@@ -281,6 +281,51 @@ class TimeSlotsFacade:
 
     async def get_self_time_slot(
             self,
+            user_id: UUID,
+            target_date: date
+    ) -> SelfTimeSlotsGetResponse:
+        result_slots = []
+
+        user = await self._user_service.get_by_user_id(user_id=user_id)
+        if user is None:
+            raise UserDoesNotExistsError
+
+        user_settings = await self._settings_service.get_settings(user_id=user.id)
+
+        booked_slots = await self._time_slots_service.get_time_self_slots(
+            user_id=user.id,
+            target_date=target_date
+        )
+
+        unique_slots = {slot.id: slot for slot in booked_slots}.values()
+        unique_slots = list(unique_slots)
+
+        for slot in unique_slots:
+            meet_start_at = self.from_utc_naive(
+                dt_utc=slot.meet_start_at,
+                tz_offset_hours=user_settings.timezone
+            )
+
+            meet_end_at = self.from_utc_naive(
+                dt_utc=slot.meet_end_at,
+                tz_offset_hours=user_settings.timezone
+            )
+
+            result_slots.append(
+                GetSelfTimeSlot(
+                    meet_start_at=self.datetime_to_float(meet_start_at),
+                    meet_end_at=self.datetime_to_float(meet_end_at),
+                    title=slot.title,
+                    description=slot.description,
+                    slot_id=slot.id,
+                    meeting_url=slot.meeting_url
+                )
+            )
+
+        return SelfTimeSlotsGetResponse(time_slots=result_slots)
+
+    async def get_self_time_slot_internal(
+            self,
             max_id: int,
             target_date: date
     ) -> SelfTimeSlotsGetResponse:
@@ -326,7 +371,7 @@ class TimeSlotsFacade:
 
     async def get_external_time_slots(
             self,
-            invited_max_id: int,
+            user_id: UUID,
             owner_token: str,
             target_date: date
     ) -> List[GetExternalTimeSlot]:
@@ -344,7 +389,7 @@ class TimeSlotsFacade:
         ):
             return []
 
-        invited_user = await self._user_service.find_by_max_id(max_id=invited_max_id)
+        invited_user = await self._user_service.get_by_user_id(user_id=user_id)
         if invited_user is None:
             raise UserDoesNotExistsError
 
@@ -472,8 +517,8 @@ class TimeSlotsFacade:
 
         return updated_time_slot
 
-    async def delete_self_time_slot(self, max_id: int, time_slot_id: UUID):
-        invited_user = await self._user_service.find_by_max_id(max_id=max_id)
+    async def delete_self_time_slot(self, user_id: UUID, time_slot_id: UUID):
+        invited_user = await self._user_service.find_by_max_id(user_id=user_id)
         if invited_user is None:
             raise UserDoesNotExistsError
 
