@@ -26,4 +26,4 @@ COPY --from=build /app/dist ./dist
 USER app
 EXPOSE 4173
 
-CMD ["vite", "preview", "--host", "0.0.0.0", "--port", "4173", "--outDir", "dist"]
+CMD ["vite", "preview", "--host", "0.0.0.0", "--port", "4173", "--outDir", "dist", "--base", "/max-calendar/"]
