@@ -49,8 +49,11 @@ let authToken: string | null = null;
 let authTokenExpiresAt = 0;
 let refreshTimer: number | null = null;
 let authPromise: Promise<boolean> | null = null;
+let initialAuthPerformed = false;
 
 const isBrowser = typeof window !== "undefined";
+
+export const sleep = (ms: number): Promise<void> => new Promise((res) => setTimeout(res, ms));
 
 const persistAuthToken = (value: StoredAuthToken) => {
   if (!isBrowser) return;
@@ -148,7 +151,9 @@ async function requestAuthToken(): Promise<boolean> {
 
 export const ensureAuthToken = async (): Promise<boolean> => {
   if (useMocks) return true;
-  if (hasValidAuthToken()) return true;
+  const needsUpdate = !initialAuthPerformed || !hasValidAuthToken();
+  initialAuthPerformed = true;
+  if (!needsUpdate) return true;
   if (!authPromise) {
     authPromise = requestAuthToken().finally(() => {
       authPromise = null;
@@ -664,6 +669,7 @@ export const fetchSettings = async (): Promise<SettingsResponse | null> => {
     return simulateNetwork(clone(mockSettings));
   }
   await requireAuth();
+  await sleep(1000);
   try {
     const { data } = await apiClient.get<SettingsResponse>("/settings/");
     return data;

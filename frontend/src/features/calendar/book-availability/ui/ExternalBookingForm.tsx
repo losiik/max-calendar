@@ -171,7 +171,7 @@ export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
               onClick={handleSubmit}
             >
               {mutation.isPending ? (
-                <Spinner size={16} title="Загрузка..." />
+                <Spinner size={20} title="Загрузка..." />
               ) : (
                 "Забронировать"
               )}

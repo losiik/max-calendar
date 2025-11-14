@@ -143,8 +143,8 @@ function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="p-4 min-h-[calc(100vh-32px)] ">
-        <Spinner size={16} title="Загрузка..." />
+      <div className="p-4 min-h-[calc(100vh-32px)] flex gap-2 justify-center align-center items-center ">
+        <>Загружаем настройки... </><Spinner size={20} />
       </div>
     );
   }

@@ -54,7 +54,7 @@ export const MenuTabs = memo(function MenuTabs() {
         setCounter(0);
 
 
-      }, 1000);
+      }, 1500);
       setIsWithinTime(true);
       setCounter(counter + 1);
       if (isWithinTime && counter >= MAX_COUNTER_VALUE) {
