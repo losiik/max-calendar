@@ -111,7 +111,7 @@ export function GuestCalendarOverlay() {
                 <i className="!text-xs">
                   * Доступные слоты - это время, которые подходят и вам, и
                   владельцу календаря. Если подходящих слотов мало,
-                  скорректируйте своё рабочее время в{" "}
+                  скорректируйте свое рабочее время в{" "}
                   <Link
                     to="/max-calendar/settings"
                     onClick={handleSettingsLinkClick}

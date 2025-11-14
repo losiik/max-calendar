@@ -8,7 +8,6 @@ import {
   triggerHapticImpact,
   triggerHapticNotification,
   type HapticImpactStyle,
-  getWebAppData,
 } from "@/shared/lib/max-web-app";
 import { useGuestCalendarStore } from "@/features/calendar/guest/model/guest-calendar.store";
 import { useOnboardingStore } from "@/features/onboarding/model/onboarding.store";
@@ -24,7 +23,6 @@ export default function App() {
   const openIfNeeded = useOnboardingStore((state) => state.openIfNeeded);
   const { data: remoteOnboardingDone, isLoading: onboardingLoading } =
     useOnboardingQuery();
-  console.log(getWebAppData())
   useEffect(() => {
     (async function () {
       const isRegistered = await ensureUserRegistered();

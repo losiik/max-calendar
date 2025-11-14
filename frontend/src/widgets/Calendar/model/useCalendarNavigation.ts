@@ -20,7 +20,7 @@ type Options = {
   selectedDate?: ISODateString;
 };
 
-const DAYS_IN_GRID = 42; // 6 недель по 7 дней
+const DAYS_IN_GRID = 42;
 
 const isSameDay = (a: Date, b: Date) =>
   a.getFullYear() === b.getFullYear() &&
@@ -32,7 +32,7 @@ const getStartOfMonth = (date: Date) =>
 
 const getGridStartDate = (date: Date) => {
   const startOfMonth = getStartOfMonth(date);
-  const weekday = (startOfMonth.getDay() + 6) % 7; // смещаем, чтобы неделя начиналась с понедельника
+  const weekday = (startOfMonth.getDay() + 6) % 7; 
   const gridStart = new Date(startOfMonth);
   gridStart.setDate(startOfMonth.getDate() - weekday);
   return gridStart;
