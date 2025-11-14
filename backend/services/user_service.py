@@ -27,7 +27,7 @@ class UserService:
     ) -> UserModelPydantic:
         user = await self.find_by_max_id(max_id=max_id)
         if user is not None:
-            raise UserAlreadyExistsError
+            return user
 
         user = await self._user_repository.save(
             entity=User(

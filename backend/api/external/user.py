@@ -12,7 +12,6 @@ from backend.schemas.user_schema import (
 from backend.schemas.token_schema import InputData, TokenResponse
 from backend.services.user_service import UserService
 from backend.facade.share_facade import ShareFacade
-from backend.exceptions import UserAlreadyExistsError
 from backend.settings.settings import settings
 
 import logging
@@ -39,22 +38,13 @@ async def create_user(
         )
 
         token_data = {
-            "user_id": user.id
+            "user_id": str(user.id)
         }
 
         access_token = create_access_token(
             data=token_data
         )
 
-        return TokenResponse(token=access_token)
-    except UserAlreadyExistsError:
-        token_data = {
-            "user_id": validated_data['params']['user']['id']
-        }
-
-        access_token = create_access_token(
-            data=token_data
-        )
         return TokenResponse(token=access_token)
     except Exception as e:
         logging.error(str(e))
