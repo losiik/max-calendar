@@ -49,7 +49,7 @@ export default function CalendarPage() {
         <Typography.Title variant="large-strong">
           {username ? `Привет, ${username}!` : "Привет!"}
         </Typography.Title> 
-         <Typography.Label className="text-neutral-500 !text-xs !leading-[12px]  ">
+         <Typography.Label className="text-neutral-500 !text-xs !leading-[14px]  ">
           {`Это твой календарь, тут можно посмотреть все свои события и события, назначенные другими пользователями.`}
         </Typography.Label> 
       </div>

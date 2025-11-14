@@ -6,7 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useGuestCalendarStore } from "../model/guest-calendar.store";
 import { ExternalCalendarView } from "@/pages/ExternalCalendarPage/ui/ExternalCalendarView";
 import { useThemeScheme } from "@/shared/lib/theme-context";
-import { useBookSlotStore } from "@/features/calendar/book-availability/model/book-slot.store";
+// import { useBookSlotStore } from "@/features/calendar/book-availability/model/book-slot.store";
 import { MdArrowBack } from "react-icons/md";
 import {
   hideBackButton,
@@ -15,10 +15,12 @@ import {
 } from "@/shared/lib/max-web-app";
 
 export function GuestCalendarOverlay() {
-  const { isActive, calendarId, ownerName, exit, pause, resume, inviteToken } =
+  const { isActive, calendarId, ownerName,
+    //  exit, 
+     pause, resume, inviteToken } =
     useGuestCalendarStore();
   const colorScheme = useThemeScheme();
-  const closeBooking = useBookSlotStore((state) => state.close);
+  // const closeBooking = useBookSlotStore((state) => state.close);
   const navigate = useNavigate();
   const backCleanupRef = useRef<(() => void) | null>(null);
   const canUseNativeBack = Boolean(inviteToken);
@@ -61,11 +63,11 @@ export function GuestCalendarOverlay() {
     }
   }, [isActive, disableNativeBack]);
 
-  const handleExit = () => {
-    disableNativeBack();
-    closeBooking();
-    exit();
-  };
+  // const handleExit = () => {
+  //   disableNativeBack();
+  //   closeBooking();
+  //   exit();
+  // };
 
   const handleSettingsLinkClick = () => {
     pause();
@@ -88,7 +90,7 @@ export function GuestCalendarOverlay() {
           >
             <div className="flex flex-col justify-between border-b border-neutral-200/40 px-3 pb-3">
               <div className="flex gap-4 pb-3 pt-4 px-2.5 justify-start align-middle items-center">
-                <MdArrowBack onClick={handleExit} size={24} />{" "}
+                <MdArrowBack onClick={handleSettingsLinkClick} size={24} />{" "}
                 <span>Вернуться в мой календарь</span>
               </div>
 
@@ -100,7 +102,7 @@ export function GuestCalendarOverlay() {
                   </>
                 }
                 subtitle={
-                  <i className="!text-xs !leading-[12px] italic">
+                  <i className="!text-xs !leading-tight italic">
                     * Доступные слоты - это время, которые подходят и вам, и
                     владельцу календаря. Если подходящих слотов мало,
                     скорректируйте свое рабочее время в{" "}
