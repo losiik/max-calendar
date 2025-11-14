@@ -57,7 +57,7 @@ SBER_API_KEY - ключ для Salute Jazz.
 PORT - опциональный порт FastAPI (по умолчанию 9000).
 
 Frontend (`frontend/.env.developmenе` или любой env для Vite):  
-VITE_API_BASE_URL - адрес backend, обычно https://<домен>/api/v1. (string) 
+VITE_API_BASE_URL - адрес backend, обычно https://<домен>/api/v1. (string)
 VITE_MAX_USER_ID - опциональная заглушка для запуска вне Max (number).
 VITE_USE_MOCKS - использовать заглушки вместо запросов к бекенду (true/false).
 
@@ -98,7 +98,16 @@ REMINDER_DAILY_URL - полный URL да `/api/v1/reminder/daily_reminder/` - 
 
 ## Деплой фронтенда
 
-Рекомендуемый способ - GitHub Pages. Процесс: `npm install`, `npm run deploy`, задать кастомный домен в настройках Pages и указать его в сообщении для проверяющих. При деплое на другой хост достаточно раздать содержимое `frontend/dist`. Проверять результат можно по домену, указанному в Pages, или прямо в MAX WebApp с `bot_url` (для этого необходимо подключить к боту ссылку на статику).
+Рекомендованный способ деплоя на GitHub Pages:
+
+1. В `frontend/package.json` добавляем поле `homepage`, указывая адрес будущей стартовой страницы:  
+   `"homepage": "https://<аккаунт>.github.io/<репозиторий-страниц>/"`.
+2. Создаём отдельный репозиторий на GitHub (например, `max-calendar-web`) и добавляем его как `git remote add`:  
+   `git remote add pages git@github.com:<аккаунт>/max-calendar-web.git`.
+3. В `package.json` убеждаемся, что скрипт `deploy` указывает на этот репозиторий и ветку `gh-pages`:  
+   `"deploy": "gh-pages -d dist -r git@github.com:<аккаунт>/max-calendar-web.git -b gh-pages"`.
+4. Выполняем `npm install`, затем `npm run build` и `npm run deploy`. Скрипт соберёт проект, скопирует `index.html` в `404.html` и запушит содержимое `dist` в ветку `gh-pages` указанного репозитория.
+5. В настройках GitHub Pages для `max-calendar-web` выбираем ветку `gh-pages` и корень (`/`). Готовый фронт доступен по `https://<аккаунт>.github.io/<репозиторий-страниц>/`. Эту ссылку и подключаем к приложению в боте. Никаких сторонних доменов создавать не требуется.
 
 ## Документация по сервисам
 
