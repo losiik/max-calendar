@@ -83,12 +83,12 @@ REMINDER_DAILY_URL - полный URL да `/api/v1/reminder/daily_reminder/` - 
 - `make run-prod` - запуск образов с sudo.
 - `make down-prod` - остановить и удалить контейнеры с sudo.
 
-## Локальный запуск через Docker
+## Локальный запуск сервиса через Docker
 
 1. Создайте файлы `.env` в `backend`, `max_bot`, `cron_job` с переменными из раздела выше.
-2. Выполните `make build` или `make run-prod`. Compose скачает зависимости, применит миграции и поднимет все контейнеры.  
-3. Backend будет доступен на `http://localhost:9090`, Swagger на `http://localhost:9090/docs`.  
-4. Фронтенд можно запустить отдельно (`npm run dev`) и направить `VITE_API_BASE_URL` на `http://localhost:9090/api/v1` или продовый урл `https://max.expalingpt.ru/api/v1`.
+2. Выполните `make build` или `make run-prod`. Compose скачает зависимости, применит миграции и поднимет все контейнеры, в том числе фронтенд.  
+3. Backend будет доступен на `http://localhost:9090`, Swagger на `http://localhost:9090/docs`, фронтенд на `http://localhost:4173`.  
+   1. ИЛИ Фронтенд можно запустить отдельно (`npm run dev`) и прописать в `.env.development` переменную `VITE_API_BASE_URL=http://localhost:9090/api/v1` или продовый урл `VITE_API_BASE_URL=https://max.expalingpt.ru/api/v1`.
 
 ## Запуск на сервере
 
