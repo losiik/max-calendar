@@ -14,6 +14,8 @@ type GuestCalendarState = {
   ignoredTokens: string[];
   initFromPayload: (token: string, options?: { activate?: boolean }) => Promise<void>;
   exit: () => void;
+  pause: () => void;
+  resume: () => void;
 };
 
 export const useGuestCalendarStore = create<GuestCalendarState>((set, get) => ({
@@ -68,5 +70,16 @@ export const useGuestCalendarStore = create<GuestCalendarState>((set, get) => ({
       title: undefined,
       isActive: false,
     }));
+  },
+
+  pause() {
+    set({ isActive: false });
+  },
+
+  resume() {
+    const state = get();
+    if (state.calendarId) {
+      set({ isActive: true });
+    }
   },
 }));

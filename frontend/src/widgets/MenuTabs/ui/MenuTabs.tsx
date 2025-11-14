@@ -1,14 +1,26 @@
 // src/widgets/MenuTabs/ui/MenuTabs.tsx
 import { Button, Container, Flex } from "@maxhub/max-ui";
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 import { useUIStore } from "@/providers/store";
 import { matchPath, useLocation, useNavigate } from "react-router-dom";
 import { ROUTE_BY_TAB, TABS, TabValue } from "@/shared/config/route";
+import { resetLocalOnboarding } from "@/features/onboarding/model/onboarding.store";
+import {
+  getCurrentMaxId,
+  resetOnboardingRemote,
+} from "@/entities/event/api";
+import { useQueryClient } from "@tanstack/react-query";
+import { onboardingKeys } from "@/entities/onboarding/model/query-keys";
+
+const MAX_COUNTER_VALUE = 5;
 
 export const MenuTabs = memo(function MenuTabs() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const setActiveTab = useUIStore((s) => s.setActiveTab);
+  const [counter, setCounter] = useState(0);
+  const [isWithinTime, setIsWithinTime] = useState(false);
+  const queryClient = useQueryClient();
 
   const base = import.meta.env.BASE_URL?.replace(/\/$/, "") || "";
   const path = pathname.startsWith(base)
@@ -30,9 +42,31 @@ export const MenuTabs = memo(function MenuTabs() {
   );
   const activeIndex = items.findIndex((i) => i.value === current);
   const sliderLeft = `${Math.max(activeIndex, 0) * 100}%`;
-
+  function handleRemoveKey(): void {
+    setCounter(counter + 1);
+  }
   const go = (value: TabValue) => {
     const target = ROUTE_BY_TAB[value];
+    if (ROUTE_BY_TAB[value] === TABS[1].value) {
+
+      setTimeout(() => {
+        setIsWithinTime(false);
+        setCounter(0);
+
+
+      }, 1000);
+      setIsWithinTime(true);
+      setCounter(counter + 1);
+      if (isWithinTime && counter >= MAX_COUNTER_VALUE) {
+        resetLocalOnboarding();
+        resetOnboardingRemote().finally(() => {
+          queryClient.invalidateQueries({
+            queryKey: onboardingKeys.current(getCurrentMaxId()),
+          });
+        });
+      }
+    }
+
     navigate(target);
     setActiveTab(value);
   };
@@ -62,7 +96,10 @@ export const MenuTabs = memo(function MenuTabs() {
                 appearance="neutral-themed"
                 size="medium"
                 stretched
-                onClick={() => go(it.value)}
+                onClick={() => {
+                  handleRemoveKey();
+                  go(it.value);
+                }}
                 className="w-full bg-transparent"
               >
                 {it.label}

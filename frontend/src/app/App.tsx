@@ -8,9 +8,11 @@ import {
   triggerHapticImpact,
   triggerHapticNotification,
   type HapticImpactStyle,
+  getWebAppData,
 } from "@/shared/lib/max-web-app";
 import { useGuestCalendarStore } from "@/features/calendar/guest/model/guest-calendar.store";
-import { GuestCalendarOverlay } from "@/features/calendar/guest/ui/GuestCalendarOverlay";
+import { useOnboardingStore } from "@/features/onboarding/model/onboarding.store";
+import { useOnboardingQuery } from "@/features/onboarding/lib/useOnboardingQuery";
 import {
   ensureUserRegistered,
   getBrowserTimezoneHours,
@@ -19,16 +21,23 @@ import {
 
 export default function App() {
   const initGuest = useGuestCalendarStore((state) => state.initFromPayload);
-
+  const openIfNeeded = useOnboardingStore((state) => state.openIfNeeded);
+  const { data: remoteOnboardingDone, isLoading: onboardingLoading } =
+    useOnboardingQuery();
+  console.log(getWebAppData())
   useEffect(() => {
     (async function () {
       const isRegistered = await ensureUserRegistered();
       if (isRegistered) {
-        
         saveSettings({ timezone: getBrowserTimezoneHours() });
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (onboardingLoading) return;
+    openIfNeeded(Boolean(remoteOnboardingDone));
+  }, [openIfNeeded, onboardingLoading, remoteOnboardingDone]);
 
   useEffect(() => {
     const token = getStartAppPayload();
@@ -57,24 +66,17 @@ export default function App() {
       ).toLowerCase();
       if (attr === "none") return;
       if (attr === "success") {
-        try {
-          triggerHapticNotification("success");
-        } catch (e: Error | unknown) {
-          return
-        }
-       return
+        triggerHapticNotification("success");
+
+        return;
       }
       const impact = (
         ["soft", "light", "medium", "heavy", "rigid"].includes(attr)
           ? attr
           : "light"
       ) as HapticImpactStyle;
-      try {
-        triggerHapticImpact(impact);
-        
-      } catch (e: Error | unknown) {
-        return
-      }
+
+      triggerHapticImpact(impact);
     };
 
     document.addEventListener("click", handleButtonClick, true);
@@ -86,7 +88,6 @@ export default function App() {
   return (
     <>
       <div id="portal-root" />
-      <GuestCalendarOverlay />
       <AppRouter />
     </>
   );

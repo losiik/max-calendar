@@ -222,6 +222,9 @@ export const getWebApp = (): WebAppBridge | undefined => resolveBridge();
 export const getWebAppData = (): WebAppData | undefined =>
   getWebApp()?.initDataUnsafe;
 
+export const getWebAppDataSafe = (): string | undefined =>
+  getWebApp()?.initData;
+
 export const getWebAppUser = (): WebAppUser | undefined =>
   getWebAppData()?.user;
 
