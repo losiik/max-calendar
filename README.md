@@ -27,7 +27,7 @@ MAX-бот - управление календарём прямо из чата.
 
 ### Backend архитектура
 - FastAPI + async SQLAlchemy поверх PostgreSQL 16, миграции выполняются yoyo, а `database.py` даёт общее подключение и middleware для сессий.
-- Слои `api` → `facade` → `services` → `repository` разделяют транспорт, координацию и работу с БД; сигналы (`signals.py`) позволяют реагировать на события (регистрация пользователя, создание слота) и переиспользовать сценарии cron/бота без дублирования.
+- Слои `api` → `facade` → `services` → `repository` разделяют транспорт данных, координацию и работу с БД; сигналы (`signals.py`) позволяют реагировать на события (регистрация пользователя, создание слота) и в дальнейшем реализовать микросервисную архитектуру.
 - Интеграции с внешними системами вынесены в `client/` (например, Salute Jazz), а в `backend/README.md` описаны все зависимости (`requirements.txt`), детальная схема и необходимые настройки для запуска приложения.
 
 ### Frontend архитектура
@@ -35,18 +35,18 @@ MAX-бот - управление календарём прямо из чата.
 - Zustand хранит локальные состояния, TanStack Query управляет запросами и кэшом, Tailwind и Max UI отвечают за визуал. `shared/lib/max-web-app.ts` инкапсулирует Telegram MAX WebApp (initData, haptics, закрытие), поэтому фронт безопасно работает внутри мессенджера.
 - Детали запуска, переменные окружения и скрипты описаны в `frontend/README.md`.
 
-## Docker и оркестрация
+## Docker
 
-`docker-compose.yml` описывает четыре сервиса и Postgres:
+`docker-compose.yml` описывает три сервиса и Postgres:
 
 - backend: собирается из `backend/Dockerfile`, запускает `uvicorn backend.main:app --host 0.0.0.0 --port 9090`.
 - bot: образ из `max_bot/Dockerfile`, стартует `python -u max_bot/main.py`.
-- cron: образ из `cron_job/Dockerfile`, каждую минуту вызывает `/api/v1/reminder/`.
+- cron: образ из `cron_job/Dockerfile`, каждую минуту вызывает `/api/v1/reminder/` и `/api/v1/reminder/daily_reminder/`.
 - db: postgres:16 с volume `postgres_data`.
 
-Данны еиз БД находятся в вольюме `postgres_data`, который примонтирован к `/var/lib/postgresql/data`. При необходимости сбросить базу достаточно удалить том `docker volume rm max-calendar_postgres_data` перед повторным `make build`.
+Данные из БД находятся в вольюме `postgres_data`, который примонтирован к `/var/lib/postgresql/data`. При необходимости сбросить базу, достаточно удалить том `docker volume rm max-calendar_postgres_data` перед повторным `make build`.
 
-Каждый сервис получает свою `.env`, указанную в `env_file`. Dockerfile всех python сервисов построены одинаково: базовый python:3.12, копирование репозитория, установка зависимостей из соответствующего `requirements.txt`, установка `PYTHONPATH`.
+Каждый сервис получает свою `.env`, примеры  для каждого сервиса находятся в файлах `.env.tmpl`. Dockerfile всех python сервисов построены одинаково: базовый python:3.12, копирование репозитория, установка зависимостей из соответствующего `requirements.txt`, установка `PYTHONPATH`.
 
 ## Переменные окружения
 
@@ -54,7 +54,8 @@ Backend (`backend/.env`):
 DB_HOST, DB_PORT, DB_MAIN_DATABASE, DB_USER, DB_PASSWORD - настройки Postgres.  
 MAX_API_KEY - токен бота, нужен для интеграции с MAX API.  
 SBER_API_KEY - ключ для Salute Jazz.  
-PORT - опциональный порт FastAPI (по умолчанию 9000).
+PROFILE - профиль среды, dev - тестовый, prod - продакшен.
+SECRET_KEY - ключ для генерации jwt
 
 Frontend (`frontend/.env.developmenе` или любой env для Vite):  
 VITE_API_BASE_URL - адрес backend, обычно https://<домен>/api/v1. (string)
@@ -77,19 +78,21 @@ REMINDER_DAILY_URL - полный URL да `/api/v1/reminder/daily_reminder/` - 
 - `make down` - остановить и удалить контейнеры.  
 - `make restart` - перезапустить стек.  
 - `make logs` - посмотреть логи всех сервисов.  
-- `make ps` - вывести состояние контейнеров.  
+- `make ps` - вывести состояние контейнеров.
+
+- `make run-prod` - запуск образов с sudo.
+- `make down-prod` - остановить и удалить контейнеры с sudo.
 
 ## Локальный запуск через Docker
 
-1. Создайте файлы `.env` в `backend`, `max_bot`, `cron_job` с переменными из раздела выше.  
-2. Заполните `postgres` значения в `docker-compose.yml`.  
-3. Выполните `make build`. Compose скачает зависимости, применит миграции и поднимет все контейнеры.  
-4. Backend будет доступен на `http://localhost:9090`, Swagger на `http://localhost:9090/docs`.  
-5. Фронтенд можно запустить отдельно (`npm run dev`) и направить `VITE_API_BASE_URL` на `http://localhost:9090/api/v1` или продовый урл `https://max.expalingpt.ru/api/v1`.
+1. Создайте файлы `.env` в `backend`, `max_bot`, `cron_job` с переменными из раздела выше.
+2. Выполните `make build` или `make run-prod`. Compose скачает зависимости, применит миграции и поднимет все контейнеры.  
+3. Backend будет доступен на `http://localhost:9090`, Swagger на `http://localhost:9090/docs`.  
+4. Фронтенд можно запустить отдельно (`npm run dev`) и направить `VITE_API_BASE_URL` на `http://localhost:9090/api/v1` или продовый урл `https://max.expalingpt.ru/api/v1`.
 
 ## Запуск на сервере
 
-ВАЖНО! Обязательная конфигурация сервера для запуска должна включать в себя ОС Linux, docker и docker compose plugin. Шаги по подняти.:
+ВАЖНО! Обязательная конфигурация сервера для запуска должна включать в себя ОС Linux, docker и docker compose plugin. Шаги по поднятию:
 
 1. Прежде чем копировать репозиторий, необходимо настроить nginx и certbot.
    ```bash
@@ -160,7 +163,7 @@ sudo certbot --nginx -d <SERVER_NAME>
 - `backend/README.md` - устройство API, зависимости и запуск.  
 - `frontend/README.md` - структура WebApp и инструкция по сборке.  
 - `max_bot/README.md` - MAX бот и его конфигурация.  
-- `cron_job/README.md` - сервис напоминаний.  
+- `cron_job/README.md` - сервис кронджоб.  
 
 ## Вклад участников
 
@@ -194,6 +197,6 @@ sudo certbot --nginx -d <SERVER_NAME>
 ## Безопасность
 
 - **Валидация через MAX WebApp:** фронтенд при первом входе и каждые 2 часа отправляет `init_data` в `PUT /users/`, backend проверяет подпись через hash из init_data и выдаёт JWT. Токен хранится в `localStorage`, автоматически обновляется заранее и добавляется в `Authorization: Bearer ...` на каждом запросе.
-- **Авторизация** все методы API используют только заголовок `Authorization`.
+- **Авторизация** все методы внешнего API используют только заголовок `Authorization`.
 - **Шаринг и гостевой просмотр:** чужой календарь доступен только по токену, выданному в боте.
-- **Ограничение CORS:** настроена политика CORS, все запросы разрашены только с одного стороннего домена.
+- **Ограничение CORS:** настроена политика CORS, все внешние запросы разрешены только с одного домена.
