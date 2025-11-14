@@ -59,6 +59,18 @@ services:
       interval: 3s
       timeout: 2s
       retries: 5
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: max-calendar-frontend
+    ports:
+      - "4173:4173"
+    restart: always
+    depends_on:
+      - backend
+      - bot
+      - cron
 
 volumes:
   postgres_data:
