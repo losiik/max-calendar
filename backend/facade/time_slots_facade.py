@@ -367,7 +367,9 @@ class TimeSlotsFacade:
                 )
             )
 
-        return SelfTimeSlotsGetResponse(time_slots=result_slots)
+        sorted_slots = sorted(result_slots, key=lambda slot: slot.meet_start_at)
+
+        return SelfTimeSlotsGetResponse(time_slots=sorted_slots)
 
     async def get_external_time_slots(
             self,
@@ -709,8 +711,10 @@ class TimeSlotsFacade:
                         time_slot_id=slot.id
                     )
 
+            sorted_slots = sorted(slot_list, key=lambda slot: slot.meet_start_at)
+
             await daily_reminder_signal.send_async(
                 DailyReminderNotification(
-                    slot_list=slot_list
+                    slot_list=sorted_slots
                 )
             )
