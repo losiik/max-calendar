@@ -1,4 +1,4 @@
-import { CellList, CellSimple, Panel } from "@maxhub/max-ui";
+import { CellSimple, Panel } from "@maxhub/max-ui";
 import { createPortal } from "react-dom";
 import { useCallback, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -15,15 +15,8 @@ import {
 } from "@/shared/lib/max-web-app";
 
 export function GuestCalendarOverlay() {
-  const {
-    isActive,
-    calendarId,
-    ownerName,
-    exit,
-    pause,
-    resume,
-    inviteToken,
-  } = useGuestCalendarStore();
+  const { isActive, calendarId, ownerName, exit, pause, resume, inviteToken } =
+    useGuestCalendarStore();
   const colorScheme = useThemeScheme();
   const closeBooking = useBookSlotStore((state) => state.close);
   const navigate = useNavigate();
@@ -34,7 +27,6 @@ export function GuestCalendarOverlay() {
     typeof document !== "undefined"
       ? document.getElementById("portal-root")
       : null;
-
 
   const disableNativeBack = useCallback(() => {
     if (backCleanupRef.current) {
@@ -79,7 +71,7 @@ export function GuestCalendarOverlay() {
     pause();
     enableNativeBack();
   };
-    if (!portalNode) return null;
+  if (!portalNode) return null;
 
   const panelClass =
     colorScheme === "dark"
@@ -94,47 +86,46 @@ export function GuestCalendarOverlay() {
           <Panel
             className={`w-full max-w-4xl overflow-hidden rounded-b-xl shadow-xl ${panelClass}`}
           >
-            <div className="flex items-center justify-between border-b border-neutral-200/40 px-3 pb-3">
-          <CellList >
-            <CellSimple
-              title="Вернуться в мой календарь"
-              before={<MdArrowBack onClick={handleExit} size={24} />}
-            />
+            <div className="flex flex-col justify-between border-b border-neutral-200/40 px-3 pb-3">
+              <div className="flex gap-4 pb-3 pt-4 px-2.5 justify-start align-middle items-center">
+                <MdArrowBack onClick={handleExit} size={24} />{" "}
+                <span>Вернуться в мой календарь</span>
+              </div>
 
-            <CellSimple height="compact"
-              title={
-                <>
-                  <b>{ownerName}</b> делится с вами календарем.
-                </>
-              }
-              subtitle={
-                <i className="!text-xs">
-                  * Доступные слоты - это время, которые подходят и вам, и
-                  владельцу календаря. Если подходящих слотов мало,
-                  скорректируйте свое рабочее время в{" "}
-                  <Link
-                    to="/max-calendar/settings"
-                    onClick={handleSettingsLinkClick}
-                    className="underline"
-                  >
-                    настройках
-                  </Link>
-                  .
-                </i>
-              }
-            />
-          </CellList>
-        </div>
+              <CellSimple
+                height="compact"
+                title={
+                  <>
+                    <b>{ownerName}</b> делится с вами календарем.
+                  </>
+                }
+                subtitle={
+                  <i className="!text-xs !leading-[12px] italic">
+                    * Доступные слоты - это время, которые подходят и вам, и
+                    владельцу календаря. Если подходящих слотов мало,
+                    скорректируйте свое рабочее время в{" "}
+                    <Link
+                      to="/max-calendar/settings"
+                      onClick={handleSettingsLinkClick}
+                      className="underline"
+                    >
+                     <b>настройках</b>
+                    </Link>
+                    .
+                  </i>
+                }
+              />
+            </div>
 
-        <div className="max-h-[90vh] overflow-y-auto px-4 py-3">
-          <ExternalCalendarView
-            calendarId={calendarId}
-            title={`Календарь ${ownerName ?? "юзера"}`}
-            subtitle="Выберите слот, чтобы предложить встречу"
-            hideHeader
-            ownerName={ownerName}
-          />
-        </div>
+            <div className="max-h-[90vh] overflow-y-auto px-4 py-3">
+              <ExternalCalendarView
+                calendarId={calendarId}
+                title={`Календарь ${ownerName ?? "юзера"}`}
+                subtitle="Выберите слот, чтобы предложить встречу"
+                hideHeader
+                ownerName={ownerName}
+              />
+            </div>
           </Panel>
         </div>,
         portalNode

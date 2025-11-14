@@ -45,10 +45,13 @@ export default function CalendarPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-3 py-3 min-h-[calc(100vh-32px)]">
-      <div>
+      <div className="flex flex-col gap-2">
         <Typography.Title variant="large-strong">
-          {username ? `Привет, ${username}` : "Привет!"}
+          {username ? `Привет, ${username}!` : "Привет!"}
         </Typography.Title> 
+         <Typography.Label className="text-neutral-500 !text-xs !leading-[12px]  ">
+          {`Это твой календарь, тут можно посмотреть все свои события и события, назначенные другими пользователями.`}
+        </Typography.Label> 
       </div>
 
       <Calendar
