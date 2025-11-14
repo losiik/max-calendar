@@ -518,7 +518,7 @@ class TimeSlotsFacade:
         return updated_time_slot
 
     async def delete_self_time_slot(self, user_id: UUID, time_slot_id: UUID):
-        invited_user = await self._user_service.find_by_max_id(user_id=user_id)
+        invited_user = await self._user_service.get_by_user_id(user_id=user_id)
         if invited_user is None:
             raise UserDoesNotExistsError
 

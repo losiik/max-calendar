@@ -70,6 +70,7 @@ async def get_user(
 @user_router_external.get('/by/token/{token}', response_model=UserNameResponse)
 async def get_name_by_token(
         token: str,
+        current_user_id: UUID = Depends(get_current_user),
         share_facade: ShareFacade = Depends(get_share_facade)
 ):
     user = await share_facade.get_user_by_token(token=token)
