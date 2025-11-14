@@ -654,6 +654,7 @@ class TimeSlotsFacade:
             text_message: str,
             user_max_id: int
     ) -> UUID:
+        user = await self._user_service.find_by_max_id(max_id=user_max_id)
         parsed_data = await self._gigachat_client.parse_message(message=text_message)
         if parsed_data is None:
             raise TextParserError
@@ -663,7 +664,7 @@ class TimeSlotsFacade:
         end_dt = self.resolve_end_time(start_dt, parsed_data.get("meet_end_at"))
 
         return await self.create_self_time_slot(
-            max_id=user_max_id,
+            user_id=user.id,
             meet_start_at=start_dt,
             meet_end_at=end_dt,
             title=parsed_data.get("title"),
