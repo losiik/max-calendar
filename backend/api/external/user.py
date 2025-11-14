@@ -48,7 +48,14 @@ async def create_user(
 
         return TokenResponse(token=access_token)
     except UserAlreadyExistsError:
-        raise HTTPException(status_code=409, detail="User already exists")
+        token_data = {
+            "user_id": validated_data['params']['user']['id']
+        }
+
+        access_token = create_access_token(
+            data=token_data
+        )
+        return TokenResponse(token=access_token)
     except Exception as e:
         logging.error(str(e))
         raise HTTPException(status_code=500, detail="Internal server error")
