@@ -69,6 +69,7 @@ export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
           new Date(`${selectedDay.date}T${selectedRange.end}:00`).toISOString(),
       })
       .catch(() => {
+        
         alert("Ошибка бронирования слота");
       });
     setTitle("");

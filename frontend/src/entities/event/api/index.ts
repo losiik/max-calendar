@@ -20,10 +20,7 @@ import {
   removeMockPersonalEvent,
   updateMockSettings,
 } from "./mock-data";
-import {
-  getMaxUserId,
-  getWebAppUser,
-} from "@/shared/lib/max-web-app";
+import { getMaxUserId, getWebAppUser } from "@/shared/lib/max-web-app";
 import { toLocalISODate } from "@/shared/util/date";
 import { toTimeParts } from "@/shared/util/time";
 
@@ -78,6 +75,10 @@ type SelfTimeSlotsGetResponse = {
 type ExternalTimeSlotsGetResponse = SelfTimeSlotsGetResponse;
 
 type SelfTimeSlot = GetSelfTimeSlot & { id?: string; slot_id?: string };
+
+interface OnboardingResponse {
+  success: boolean;
+}
 
 interface TimeSlotsCreateResponse {
   id: string;
@@ -293,7 +294,7 @@ export const getCurrentMaxId = (): number | null => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
-const ensureMaxId = (): number => {
+export const ensureMaxId = (): number => {
   const id = getCurrentMaxId();
   if (id === null) {
     throw new Error("MAX user id is not available");
@@ -477,6 +478,66 @@ export const ensureUserRegistered = async (): Promise<boolean> => {
     
   }
   return true;
+};
+
+export const fetchOnboardingStatus = async (): Promise<boolean> => {
+  if (useMocks) return true;
+  const maxId = getCurrentMaxId();
+  if (!maxId) return false;
+  console.log('отправляем данные на onboarding get')
+
+  try {
+    const { data } = await apiClient.get<OnboardingResponse>("/onboarding/", {
+      params: { max_id: maxId },
+    });
+    console.log(data)
+    return Boolean(data?.success);
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+};
+
+export const completeOnboardingRemote = async (): Promise<boolean> => {
+  if (useMocks) return true;
+  const maxId = getCurrentMaxId();
+  if (!maxId) return false;
+  console.log('отправляем данные на onboarding put')
+  try {
+    const { data } = await apiClient.put<OnboardingResponse>(
+      "/onboarding/",
+      undefined,
+      {
+        params: { max_id: maxId },
+      }
+    );
+      console.log(data)
+
+    return Boolean(data?.success);
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+};
+
+export const resetOnboardingRemote = async (): Promise<boolean> => {
+  if (useMocks) return true;
+  const maxId = getCurrentMaxId();
+  if (!maxId) return false;
+  console.log('отправляем данные на onboarding delete')
+
+  try {
+    const { data } = await apiClient.delete<OnboardingResponse>(
+      "/onboarding/",
+      {
+        params: { max_id: maxId },
+      }
+    );
+    return Boolean(data?.success);
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
 };
 
 
