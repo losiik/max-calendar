@@ -1,6 +1,9 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends
 from fastapi import HTTPException
 
+from backend.api.auth import get_current_user
 from backend.dependes import get_settings_facade
 from backend.schemas.settings_schema import (
     SettingsCreateRequest,
@@ -11,19 +14,19 @@ from backend.facade.settings_facade import SettingsFacade
 from backend.exceptions import UserDoesNotExistsError
 
 
-settings_router = APIRouter(prefix='/settings')
-settings_router.tags = ["Settings"]
+settings_router_external = APIRouter(prefix='/settings')
+settings_router_external.tags = ["Settings"]
 
 
-@settings_router.put('/', response_model=SettingsResponse)
+@settings_router_external.put('/', response_model=SettingsResponse)
 async def add_settings(
-        max_id: int,
         settings_data: SettingsCreateRequest,
+        current_user_id: UUID = Depends(get_current_user),
         settings_facade: SettingsFacade = Depends(get_settings_facade)
 ):
     try:
         settings = await settings_facade.create_user_settings(
-            max_id=max_id,
+            user_id=current_user_id,
             settings=settings_data
         )
 
@@ -34,15 +37,15 @@ async def add_settings(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@settings_router.patch('/', response_model=SettingsResponse)
+@settings_router_external.patch('/', response_model=SettingsResponse)
 async def update_settings(
-        max_id: int,
         update_data: SettingsUpdateRequest,
+        current_user_id: UUID = Depends(get_current_user),
         settings_facade: SettingsFacade = Depends(get_settings_facade)
 ):
     try:
         settings = await settings_facade.update_settings(
-            max_id=max_id,
+            user_id=current_user_id,
             timezone=update_data.timezone,
             work_time_start=update_data.work_time_start,
             work_time_end=update_data.work_time_end,
@@ -58,14 +61,14 @@ async def update_settings(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@settings_router.get('/', response_model=SettingsResponse)
+@settings_router_external.get('/', response_model=SettingsResponse)
 async def get_settings(
-        max_id: int,
+        current_user_id: UUID = Depends(get_current_user),
         settings_facade: SettingsFacade = Depends(get_settings_facade)
 ):
     try:
         settings = await settings_facade.get_settings(
-            max_id=max_id
+            user_id=current_user_id
         )
 
         return settings

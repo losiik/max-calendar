@@ -30,5 +30,7 @@ class Settings(BaseSettings):
 
     profile: Profile = os.getenv("PROFILE")
 
+    secret_key: str = os.getenv("SECRET_KEY")
+
 
 settings = Settings()

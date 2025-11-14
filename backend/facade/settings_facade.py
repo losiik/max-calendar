@@ -1,3 +1,4 @@
+from uuid import UUID
 from typing import Optional
 
 from backend.exceptions import UserDoesNotExistsError
@@ -20,10 +21,10 @@ class SettingsFacade:
 
     async def create_user_settings(
             self,
-            max_id: int,
+            user_id: UUID,
             settings: SettingsCreateRequest
     ) -> SettingsResponse:
-        user = await self._user_service.find_by_max_id(max_id=max_id)
+        user = await self._user_service.get_by_user_id(user_id=user_id)
         if user is None:
             raise UserDoesNotExistsError
 
@@ -39,8 +40,8 @@ class SettingsFacade:
         )
         return self._settings_service.settings_model_to_response(model=settings_pydantic_model)
 
-    async def get_settings(self, max_id: int) -> SettingsResponse:
-        user = await self._user_service.find_by_max_id(max_id=max_id)
+    async def get_settings(self, user_id: UUID) -> SettingsResponse:
+        user = await self._user_service.get_by_user_id(user_id=user_id)
         if user is None:
             raise UserDoesNotExistsError
 
@@ -49,7 +50,7 @@ class SettingsFacade:
 
     async def update_settings(
             self,
-            max_id: int,
+            user_id: UUID,
             timezone: Optional[int] = None,
             work_time_start: Optional[float] = None,
             work_time_end: Optional[float] = None,
@@ -58,7 +59,7 @@ class SettingsFacade:
             daily_reminder_time: Optional[float] = None,
             working_days: list[str] = None
     ) -> SettingsResponse:
-        user = await self._user_service.find_by_max_id(max_id=max_id)
+        user = await self._user_service.get_by_user_id(user_id=user_id)
         if user is None:
             raise UserDoesNotExistsError
 

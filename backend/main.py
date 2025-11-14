@@ -13,7 +13,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.settings.settings import settings
-from backend.api.routers import api_router
+from backend.api.routers import api_router_external, api_router_internal
 from backend.enums.profile_enum import Profile
 
 from pathlib import Path
@@ -50,7 +50,8 @@ app.add_middleware(
 )
 
 # Routers
-app.include_router(api_router)
+app.include_router(api_router_external)
+app.include_router(api_router_internal)
 
 
 if __name__ == "__main__":

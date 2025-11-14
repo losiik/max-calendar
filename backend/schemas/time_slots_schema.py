@@ -14,11 +14,10 @@ class TimeSlots(BaseModel):
 
 class TimeSlotsCreateRequest(TimeSlots):
     owner_token: str
-    invited_max_id: int
 
 
 class TimeSlotsSelfCreateRequest(TimeSlots):
-    max_id: int
+    pass
 
 
 class TimeSlotsCreateResponse(BaseModel):
