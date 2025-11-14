@@ -43,6 +43,8 @@ app.add_middleware(
         "https://aeroserg.github.io",
         "http://localhost:9000",
         "http://bot",
+        "http://localhost:5173",
+        "http://localhost:5174"
     ],
     allow_credentials=True,
     allow_methods=["*"],

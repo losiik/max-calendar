@@ -597,7 +597,7 @@ export const fetchOnboardingStatus = async (): Promise<boolean> => {
   if (useMocks) return true;
   await requireAuth();
   try {
-    const { data } = await apiClient.get<OnboardingResponse>("/onboarding");
+    const { data } = await apiClient.get<OnboardingResponse>("/onboarding/");
     return Boolean(data?.success);
   } catch (error) {
     console.error(error);
@@ -609,7 +609,7 @@ export const completeOnboardingRemote = async (): Promise<boolean> => {
   if (useMocks) return true;
   await requireAuth();
   try {
-    const { data } = await apiClient.post<OnboardingResponse>("/onboarding");
+    const { data } = await apiClient.post<OnboardingResponse>("/onboarding/");
     return Boolean(data?.success);
   } catch (error) {
     console.error(error);
@@ -621,7 +621,7 @@ export const resetOnboardingRemote = async (): Promise<boolean> => {
   if (useMocks) return true;
   await requireAuth();
   try {
-    const { data } = await apiClient.delete<OnboardingResponse>("/onboarding");
+    const { data } = await apiClient.delete<OnboardingResponse>("/onboarding/");
     return Boolean(data?.success);
   } catch (error) {
     console.error(error);

@@ -79,7 +79,7 @@ REMINDER_DAILY_URL - полный URL да `/api/v1/reminder/daily_reminder/` - 
 - `make logs` - посмотреть логи всех сервисов.  
 - `make ps` - вывести состояние контейнеров.  
 
-## Локальный запуск через Docker (В ПРОДЕ НЕ БУДЕТ РАБОТАТЬ, так как сейчас все задеплоено на сервере)
+## Локальный запуск через Docker
 
 1. Создайте файлы `.env` в `backend`, `max_bot`, `cron_job` с переменными из раздела выше.  
 2. Заполните `postgres` значения в `docker-compose.yml`.  
@@ -89,11 +89,48 @@ REMINDER_DAILY_URL - полный URL да `/api/v1/reminder/daily_reminder/` - 
 
 ## Запуск на сервере
 
-Минимальная конфигурация - любой Linux с docker и docker compose plugin. Шаги:
+ВАЖНО! Обязательная конфигурация сервера для запуска должна включать в себя ОС Linux, docker и docker compose plugin. Шаги по подняти.:
 
-1. Склонировать репозиторий на сервер.
-2. Создать `.env` файлы и заполнить секреты.  
-3. Выполнить `make build` или `docker compose up -d --build` или `make run-prod` - для запуска из под sudo.  
+1. Прежде чем копировать репозиторий, необходимо настроить nginx. ```bash
+server {
+    server_name max.explaingpt.ru;  # замените на ваше доменное имя или IP
+
+    location / {
+        proxy_pass http://127.0.0.1:9090;  # адрес вашего FastAPI-сервера
+        proxy_connect_timeout 10s;
+        proxy_read_timeout 600s;
+        proxy_send_timeout 600s;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_buffering off;
+    }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/max.explaingpt.ru/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/max.explaingpt.ru/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+server {
+    if ($host = max.explaingpt.ru) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    listen 80;
+    server_name max.explaingpt.ru;
+    return 404; # managed by Certbot
+
+
+}
+```
+2. Склонировать репозиторий на сервер.
+3. Создать `.env` файлы и заполнить секреты.  
+4. Выполнить `make build` или `docker compose up -d --build` или `make run-prod` - для запуска из под sudo.  
 Фронтенд разворачивается отдельно как статика: `npm run build`, содержимое `frontend/dist` копируется в любой CDN или gh-pages или vercel.
 
 ## Деплой фронтенда
