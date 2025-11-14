@@ -24,8 +24,14 @@ type ExternalBookingFormProps = {
 };
 
 export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
-  const { selectedDay, selectedRange, isOpen, close, selectRange } =
-    useBookSlotStore();
+  const {
+    selectedDay,
+    selectedRange,
+    isOpen,
+    close,
+    selectRange,
+    openSuccessOverlay,
+  } = useBookSlotStore();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [isSettingsFilledIn, setSettingsFilledIn] = useState(false);
@@ -55,8 +61,8 @@ export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
   const handleSubmit = async () => {
     if (!selectedRange) return;
 
-    await mutation
-      .mutateAsync({
+    try {
+      await mutation.mutateAsync({
         title,
         description: description || undefined,
         startsAt:
@@ -67,14 +73,15 @@ export function ExternalBookingForm({ calendarId }: ExternalBookingFormProps) {
         endsAt:
           selectedRange.endISO ??
           new Date(`${selectedDay.date}T${selectedRange.end}:00`).toISOString(),
-      })
-      .catch(() => {
-        
-        alert("Ошибка бронирования слота");
       });
-    setTitle("");
-    setDescription("");
-    close();
+      setTitle("");
+      setDescription("");
+      close();
+      openSuccessOverlay();
+    } catch {
+      
+      alert("Ошибка бронирования слота");
+    }
   };
 
   const handleClose = () => {

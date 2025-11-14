@@ -262,6 +262,7 @@ export const getStartAppParams = (): WebAppStartParam | undefined =>
   getWebApp()?.initDataUnsafe?.start_param;
 
 export const getStartAppPayload = (): string | undefined => {
+  console.log(`[LOGGER][getStartAppPayload] authorization of user`)
   const params = getStartAppParams();
   if (!params) return undefined;
   return params;

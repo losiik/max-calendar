@@ -5,6 +5,7 @@ import { Calendar } from "@/widgets/Calendar/ui/Calendar";
 import { useSharedCalendarQuery } from "@/entities/event/model/queries";
 import { useBookSlotStore } from "@/features/calendar/book-availability/model/book-slot.store";
 import { ExternalBookingForm } from "@/features/calendar/book-availability/ui/ExternalBookingForm";
+import { BookingSuccessOverlay } from "@/features/calendar/book-availability/ui/BookingSuccessOverlay";
 import type { ISODateString } from "@/entities/event/model/types";
 import { PALETTE } from "@/shared/config/consts/consts";
 import { useThemeScheme } from "@/shared/lib/theme-context";
@@ -101,6 +102,7 @@ export function ExternalCalendarView({
       </Flex>
 
       <ExternalBookingForm calendarId={calendarId} />
+      <BookingSuccessOverlay />
     </div>
   );
 }

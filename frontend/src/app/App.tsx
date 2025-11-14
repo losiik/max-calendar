@@ -23,8 +23,17 @@ export default function App() {
   const openIfNeeded = useOnboardingStore((state) => state.openIfNeeded);
   const { data: remoteOnboardingDone, isLoading: onboardingLoading } =
     useOnboardingQuery();
+
+  useEffect(() => {
+    const token = getStartAppPayload();
+    if (token) {
+      initGuest(token);
+    }
+  }, [initGuest]);
+
   useEffect(() => {
     (async function () {
+      console.log(`[LOGGER][START_APP] checking for token`)
       const isRegistered = await ensureUserRegistered();
       if (isRegistered) {
         saveSettings({ timezone: getBrowserTimezoneHours() });
@@ -36,13 +45,6 @@ export default function App() {
     if (onboardingLoading) return;
     openIfNeeded(Boolean(remoteOnboardingDone));
   }, [openIfNeeded, onboardingLoading, remoteOnboardingDone]);
-
-  useEffect(() => {
-    const token = getStartAppPayload();
-    if (token) {
-      initGuest(token);
-    }
-  }, [initGuest]);
 
   useEffect(() => {
     enableClosingConfirmation();
