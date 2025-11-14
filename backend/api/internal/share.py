@@ -7,11 +7,11 @@ from backend.schemas.share_schema import ShareTokenResponse
 from backend.exceptions import UserDoesNotExistsError
 
 
-share_router = APIRouter(prefix='/share')
-share_router.tags = ["Share"]
+share_router_internal = APIRouter(prefix='/share')
+share_router_internal.tags = ["Share"]
 
 
-@share_router.get('/{max_id}', response_model=ShareTokenResponse)
+@share_router_internal.get('/{max_id}', response_model=ShareTokenResponse)
 async def get_share_token(
         max_id: int,
         share_facade: ShareFacade = Depends(get_share_facade)
