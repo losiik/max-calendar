@@ -6,4 +6,4 @@ class TokenResponse(BaseModel):
 
 
 class InputData(BaseModel):
-    input_data: str
+    init_data: str

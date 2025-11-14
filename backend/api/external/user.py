@@ -27,7 +27,7 @@ async def create_user(
         data: InputData,
         user_service: UserService = Depends(get_user_service)
 ):
-    validated_data = validate_max_webapp_data(init_data=data.input_data, bot_token=settings.max_api_key)
+    validated_data = validate_max_webapp_data(init_data=data.init_data, bot_token=settings.max_api_key)
     if not validated_data['correct']:
         raise HTTPException(status_code=400, detail="Input data is incorrect")
 

@@ -77,9 +77,6 @@ def validate_max_webapp_data(init_data: str, bot_token: str) -> dict[str, Any]:
             else:
                 params[key] = value
 
-    if "user" in params:
-        params["user"] = json.loads(params["user"])
-
     if not received_hash:
         return {
             "params": params,
@@ -100,6 +97,9 @@ def validate_max_webapp_data(init_data: str, bot_token: str) -> dict[str, Any]:
         msg=data_check_string.encode('utf-8'),
         digestmod=hashlib.sha256
     ).hexdigest()
+
+    if "user" in params:
+        params["user"] = json.loads(params["user"])
 
     return {
         "params": params,
