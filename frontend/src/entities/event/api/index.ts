@@ -20,7 +20,7 @@ import {
   removeMockPersonalEvent,
   updateMockSettings,
 } from "./mock-data";
-import { getMaxUserId, getWebAppUser } from "@/shared/lib/max-web-app";
+import { getMaxUserId, getWebApp } from "@/shared/lib/max-web-app";
 import { toLocalISODate } from "@/shared/util/date";
 import { toTimeParts } from "@/shared/util/time";
 
@@ -36,11 +36,153 @@ const useMocks = shouldMockByEnv || !isWebAppAvailable;
 
 export const isMockApi = useMocks;
 
+const TOKEN_STORAGE_KEY = "max-calendar:auth-token";
+const TOKEN_DEFAULT_TTL_MS = 2 * 60 * 60 * 1000;
+const TOKEN_REFRESH_LEEWAY_MS = 2 * 60 * 1000;
+
+type StoredAuthToken = {
+  token: string;
+  expiresAt: number;
+};
+
+let authToken: string | null = null;
+let authTokenExpiresAt = 0;
+let refreshTimer: number | null = null;
+let authPromise: Promise<boolean> | null = null;
+
+const isBrowser = typeof window !== "undefined";
+
+const persistAuthToken = (value: StoredAuthToken) => {
+  if (!isBrowser) return;
+  try {
+    window.localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(value));
+  } catch {
+    // 
+  }
+};
+
+const clearStoredAuthToken = () => {
+  if (!isBrowser) return;
+  try {
+    window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+  } catch {
+    // 
+  }
+};
+
+const setAuthToken = (token: string, ttlMs: number = TOKEN_DEFAULT_TTL_MS) => {
+  authToken = token;
+  authTokenExpiresAt = Date.now() + ttlMs;
+  persistAuthToken({ token, expiresAt: authTokenExpiresAt });
+  scheduleTokenRefresh();
+};
+
+const clearAuthToken = () => {
+  authToken = null;
+  authTokenExpiresAt = 0;
+  if (refreshTimer && isBrowser) {
+    window.clearTimeout(refreshTimer);
+  }
+  refreshTimer = null;
+  clearStoredAuthToken();
+};
+
+const loadTokenFromStorage = () => {
+  if (!isBrowser) return;
+  try {
+    const raw = window.localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw) as StoredAuthToken;
+    if (parsed.expiresAt > Date.now()) {
+      authToken = parsed.token;
+      authTokenExpiresAt = parsed.expiresAt;
+      scheduleTokenRefresh();
+    } else {
+      clearStoredAuthToken();
+    }
+  } catch {
+    clearStoredAuthToken();
+  }
+};
+
+function scheduleTokenRefresh() {
+  if (!isBrowser || !authTokenExpiresAt) return;
+  if (refreshTimer) {
+    window.clearTimeout(refreshTimer);
+  }
+  const delay = authTokenExpiresAt - Date.now() - TOKEN_REFRESH_LEEWAY_MS;
+  if (delay <= 0) {
+    void requestAuthToken();
+    return;
+  }
+  refreshTimer = window.setTimeout(() => {
+    void requestAuthToken();
+  }, delay);
+}
+
+export const hasValidAuthToken = (): boolean =>
+  Boolean(authToken && authTokenExpiresAt - Date.now() > TOKEN_REFRESH_LEEWAY_MS);
+
+async function requestAuthToken(): Promise<boolean> {
+  if (useMocks) return true;
+  const initData = getWebApp()?.initData;
+  if (!initData) {
+    console.warn("MAX initData не доступна");
+    return false;
+  }
+  try {
+    const { data } = await apiClient.put<AuthResponse>("/users/", {
+      init_data: initData,
+    });
+    if (data?.token) {
+      const ttlMs = TOKEN_DEFAULT_TTL_MS;
+      setAuthToken(data.token, ttlMs);
+      return true;
+    }
+  } catch (error) {
+    console.error("Failed to refresh auth token", error);
+  }
+  clearAuthToken();
+  return false;
+}
+
+export const ensureAuthToken = async (): Promise<boolean> => {
+  if (useMocks) return true;
+  if (hasValidAuthToken()) return true;
+  if (!authPromise) {
+    authPromise = requestAuthToken().finally(() => {
+      authPromise = null;
+    });
+  }
+  return authPromise;
+};
+
+const requireAuth = async () => {
+  const ok = await ensureAuthToken();
+  if (!ok) {
+    throw new Error("Authorization token is not available");
+  }
+};
+
+if (!useMocks) {
+  loadTokenFromStorage();
+}
+
+apiClient.interceptors.request.use((config) => {
+  if (!useMocks && authToken) {
+    if (!config.headers?.set) {
+      config.headers = new axios.AxiosHeaders(config.headers);
+    }
+    config.headers.set("Authorization", `Bearer ${authToken}`);
+  }
+  return config;
+});
+
 type CalendarId = string;
 
 export type CalendarMonthCursor = {
   year: number;
-  month: number; // 0-11
+  month: number;
 };
 
 type CalendarMonthInput = {
@@ -80,6 +222,11 @@ interface OnboardingResponse {
   success: boolean;
 }
 
+interface AuthResponse {
+  token: string;
+  expires_in?: number;
+}
+
 interface TimeSlotsCreateResponse {
   id: string;
 }
@@ -96,7 +243,6 @@ interface TimeSlotsCreateRequest {
   meet_start_at: string;
   meet_end_at: string;
   owner_token: string;
-  invited_max_id: number;
   title?: string | null;
   description?: string | null;
 }
@@ -104,7 +250,6 @@ interface TimeSlotsCreateRequest {
 interface TimeSlotsSelfCreateRequest {
   meet_start_at: string;
   meet_end_at: string;
-  max_id: number;
   title?: string | null;
   description?: string | null;
 }
@@ -186,13 +331,12 @@ const floatToTimeLabel = (floatValue: number): string => {
   return `${pad(h)}:${pad(m)}`;
 };
 
-const fetchSelfSlotsForDate = async (
-  maxId: number,
-  date: string
-): Promise<SelfTimeSlot[]> => {
+const fetchSelfSlotsForDate = async (date: string): Promise<SelfTimeSlot[]> => {
+  await requireAuth();
   try {
+    const safeDate = encodeURIComponent(date);
     const { data } = await apiClient.get<SelfTimeSlotsGetResponse>(
-      `/time_slots/self/${maxId}/${date}`
+      `/time_slots/self/${safeDate}`
     );
     return data.time_slots ?? [];
   } catch (error) {
@@ -208,13 +352,14 @@ const fetchSelfSlotsForDate = async (
 
 const fetchExternalSlotsForDate = async (
   calendarId: string,
-  date: string,
-  invitedId: number
+  date: string
 ): Promise<SelfTimeSlot[]> => {
-  if (!invitedId) return [];
+  await requireAuth();
   try {
+    const safeCalendarId = encodeURIComponent(calendarId);
+    const safeDate = encodeURIComponent(date);
     const { data } = await apiClient.get<ExternalTimeSlotsGetResponse>(
-      `/time_slots/${invitedId}/${calendarId}/${date}`,
+      `/time_slots/${safeCalendarId}/${safeDate}`
     );
     return data.time_slots ?? [];
   } catch (error) {
@@ -294,19 +439,6 @@ export const getCurrentMaxId = (): number | null => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
-export const ensureMaxId = (): number => {
-  const id = getCurrentMaxId();
-  if (id === null) {
-    throw new Error("MAX user id is not available");
-  }
-  return id;
-};
-
-const withMaxId = (payload: CreateEventPayload): CreateEventPayload => ({
-  ...payload,
-  maxId: payload.maxId ?? getMaxUserId(),
-});
-
 const uid = () =>
   typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
     ? crypto.randomUUID()
@@ -327,13 +459,13 @@ export const fetchOwnCalendar = async (
   if (useMocks) {
     return simulateNetwork(clone(filterDaysByCursor(mockPersonalDays, cursor)));
   }
-  const maxId = getCurrentMaxId();
-  if (!maxId) return [];
+  const currentUserId = getCurrentMaxId();
+  if (!currentUserId) return [];
 
   const dates = buildMonthDates(cursor);
   const results = await Promise.all(
     dates.map(async (date) => {
-      const slots = await fetchSelfSlotsForDate(maxId, date);
+      const slots = await fetchSelfSlotsForDate(date);
       return convertSlotsToCalendarDay(date, slots);
     })
   );
@@ -350,13 +482,13 @@ export const fetchSharedCalendar = async (
     return simulateNetwork(clone(filterDaysByCursor(calendar, cursor)));
   }
 
-  const invitedId = getCurrentMaxId();
-  if (!invitedId) return [];
+  const currentUserId = getCurrentMaxId();
+  if (!currentUserId) return [];
 
   const dates = buildMonthDates(cursor);
   const results = await Promise.all(
     dates.map(async (date) => {
-      const slots = await fetchExternalSlotsForDate(calendarId, date, invitedId);
+      const slots = await fetchExternalSlotsForDate(calendarId, date);
       return convertSlotsToCalendarDay(date, slots, { markEmptyAsDisabled: true });
     })
   );
@@ -366,7 +498,7 @@ export const fetchSharedCalendar = async (
 export const createEvent = async (
   payload: CreateEventPayload
 ): Promise<CalendarEvent> => {
-  const body = withMaxId(payload);
+  const body = payload;
   if (useMocks) {
     const slotUuid = uid();
     const event: CalendarEvent = {
@@ -379,8 +511,8 @@ export const createEvent = async (
     return simulateNetwork(event);
   }
 
+  await requireAuth();
   const request: TimeSlotsSelfCreateRequest = {
-    max_id: ensureMaxId(),
     meet_start_at: formatDateTimeForApi(body.startsAt),
     meet_end_at: formatDateTimeForApi(body.endsAt),
     title: body.title ?? null,
@@ -405,7 +537,7 @@ export const bookSlot = async (
   calendarId: CalendarId,
   payload: CreateEventPayload
 ): Promise<CalendarEvent> => {
-  const body = withMaxId(payload);
+  const body = payload;
   if (useMocks) {
     const slotUuid = uid();
     const event: CalendarEvent = {
@@ -418,9 +550,9 @@ export const bookSlot = async (
     return simulateNetwork(event);
   }
 
+  await requireAuth();
   const request: TimeSlotsCreateRequest = {
     owner_token: calendarId,
-    invited_max_id: ensureMaxId(),
     meet_start_at: formatDateTimeForApi(body.startsAt),
     meet_end_at: formatDateTimeForApi(body.endsAt),
     title: body.title ?? null,
@@ -447,50 +579,20 @@ export const deleteOwnTimeSlot = async (slotId: string): Promise<void> => {
     removeMockPersonalEvent(slotId);
     return simulateNetwork(undefined);
   }
-  const maxId = ensureMaxId();
-  await apiClient.delete(`/time_slots/self/${maxId}/${slotId}`);
+  await requireAuth();
+  const safeSlotId = encodeURIComponent(slotId);
+  await apiClient.delete(`/time_slots/self/${safeSlotId}`);
 };
 
 export const ensureUserRegistered = async (): Promise<boolean> => {
-  if (useMocks) return true;
-  const maxId = getCurrentMaxId();
-  if (!maxId) return false;
-
-  try {
-    const user = getWebAppUser();
-
-    await apiClient.put("/users/", {
-      max_id: maxId,
-      name: user?.first_name ?? user?.username ?? "Пользователь Max",
-      username: user?.username ?? undefined,
-    })
-    return false;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      if (!error.response) {
-        
-        return false;
-      }
-      if (error.response.status === 409) {
-        return true;
-      }
-    }
-    
-  }
-  return true;
+  return ensureAuthToken();
 };
 
 export const fetchOnboardingStatus = async (): Promise<boolean> => {
   if (useMocks) return true;
-  const maxId = getCurrentMaxId();
-  if (!maxId) return false;
-  console.log('отправляем данные на onboarding get')
-
+  await requireAuth();
   try {
-    const { data } = await apiClient.get<OnboardingResponse>("/onboarding/", {
-      params: { max_id: maxId },
-    });
-    console.log(data)
+    const { data } = await apiClient.get<OnboardingResponse>("/onboarding");
     return Boolean(data?.success);
   } catch (error) {
     console.error(error);
@@ -500,19 +602,9 @@ export const fetchOnboardingStatus = async (): Promise<boolean> => {
 
 export const completeOnboardingRemote = async (): Promise<boolean> => {
   if (useMocks) return true;
-  const maxId = getCurrentMaxId();
-  if (!maxId) return false;
-  console.log('отправляем данные на onboarding put')
+  await requireAuth();
   try {
-    const { data } = await apiClient.put<OnboardingResponse>(
-      "/onboarding/",
-      undefined,
-      {
-        params: { max_id: maxId },
-      }
-    );
-      console.log(data)
-
+    const { data } = await apiClient.post<OnboardingResponse>("/onboarding");
     return Boolean(data?.success);
   } catch (error) {
     console.error(error);
@@ -522,17 +614,9 @@ export const completeOnboardingRemote = async (): Promise<boolean> => {
 
 export const resetOnboardingRemote = async (): Promise<boolean> => {
   if (useMocks) return true;
-  const maxId = getCurrentMaxId();
-  if (!maxId) return false;
-  console.log('отправляем данные на onboarding delete')
-
+  await requireAuth();
   try {
-    const { data } = await apiClient.delete<OnboardingResponse>(
-      "/onboarding/",
-      {
-        params: { max_id: maxId },
-      }
-    );
+    const { data } = await apiClient.delete<OnboardingResponse>("/onboarding");
     return Boolean(data?.success);
   } catch (error) {
     console.error(error);
@@ -579,12 +663,9 @@ export const fetchSettings = async (): Promise<SettingsResponse | null> => {
   if (useMocks) {
     return simulateNetwork(clone(mockSettings));
   }
-  const maxId = getCurrentMaxId();
-  if (!maxId) return null;
+  await requireAuth();
   try {
-    const { data } = await apiClient.get<SettingsResponse>("/settings/", {
-      params: { max_id: maxId },
-    });
+    const { data } = await apiClient.get<SettingsResponse>("/settings/");
     return data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -606,14 +687,12 @@ export const saveSettings = async (
   if (useMocks) {
     return simulateNetwork(clone(updateMockSettings(payload)));
   }
-  const maxId = ensureMaxId();
+  await requireAuth();
   const body: SettingsUpdateRequest = {
     timezone: payload.timezone ?? getBrowserTimezoneHours(),
     ...payload,
   };
-  const { data } = await apiClient.patch<SettingsResponse>("/settings/", body, {
-    params: { max_id: maxId },
-  });
+  const { data } = await apiClient.patch<SettingsResponse>("/settings/", body);
 
   const zeroSafeFields: Array<
     Extract<

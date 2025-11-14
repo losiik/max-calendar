@@ -11,7 +11,6 @@ export const useOnboardingMutation = () => {
   const maxId = getCurrentMaxId();
 
   return useMutation({
-
     mutationFn: () => completeOnboardingRemote(),
     onSuccess: () => {
       queryClient.invalidateQueries({

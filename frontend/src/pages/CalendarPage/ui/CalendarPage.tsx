@@ -17,7 +17,7 @@ export default function CalendarPage() {
   const openDay = useManageAvailabilityStore((state) => state.openDay);
   const username = getMaxUserName();
 
-  const days = data ?? [];
+  const days = useMemo(() => data ?? [], [data]);
   const daysMap = useMemo(
     () => new Map(days.map((day) => [day.date, day])),
     [days]

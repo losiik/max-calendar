@@ -99,7 +99,7 @@ export function DaySlotsDrawer() {
       setFormOpen(false);
     } catch (error) {
       
-      setFormError("Не удалось сохранить событие. Попробуйте ещё раз.");
+      setFormError("Не удалось сохранить событие. Попробуйте еще раз.");
     }
   };
 
@@ -116,7 +116,7 @@ export function DaySlotsDrawer() {
       removeEvent(slotId);
     } catch (error) {
       
-      setDeleteError("Не удалось удалить событие. Попробуйте ещё раз.");
+      setDeleteError("Не удалось удалить событие. Попробуйте еще раз.");
     } finally {
       setDeletingId(null);
     }

@@ -18,7 +18,7 @@ const setStoredFlag = () => {
   try {
     window.localStorage.setItem(STORAGE_KEY, "1");
   } catch {
-    // ignore
+    // 
   }
 };
 
@@ -27,7 +27,7 @@ const clearStoredFlag = () => {
   try {
     window.localStorage.removeItem(STORAGE_KEY);
   } catch {
-    // ignore
+    // 
   }
 };
 
