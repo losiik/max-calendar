@@ -70,7 +70,7 @@ async def book_self_time_slot(
         raise HTTPException(status_code=409, detail="Time slot overlap")
 
 
-@time_slots_router_external.get('/self/{max_id}/{target_date}', response_model=SelfTimeSlotsGetResponse)
+@time_slots_router_external.get('/self/{target_date}', response_model=SelfTimeSlotsGetResponse)
 async def get_self_time_slots(
         target_date: date,
         current_user_id: UUID = Depends(get_current_user),
@@ -87,7 +87,7 @@ async def get_self_time_slots(
 
 
 @time_slots_router_external.get(
-    '/{invited_max_id}/{owner_token}/{target_date}',
+    '/{owner_token}/{target_date}',
     response_model=ExternalTimeSlotsGetResponse
 )
 async def get_external_time_slots(
@@ -126,7 +126,7 @@ async def update_time_slot(
     return time_slot
 
 
-@time_slots_router_external.delete('/self/{max_id}/{time_slot_id}')
+@time_slots_router_external.delete('/self/{time_slot_id}')
 async def delete_time_slot(
         time_slot_id: UUID,
         current_user_id: UUID = Depends(get_current_user),
