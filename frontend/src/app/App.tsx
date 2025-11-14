@@ -33,9 +33,10 @@ export default function App() {
 
   useEffect(() => {
     (async function () {
-      console.log(`[LOGGER][START_APP] checking for token`)
+      console.log(`[LOGGER][START_APP] ensuring user is registered...`)
       const isRegistered = await ensureUserRegistered();
       if (isRegistered) {
+        console.log(`[LOGGER][START_APP] user is registered, saving settings...`)
         saveSettings({ timezone: getBrowserTimezoneHours() });
       }
     })();
